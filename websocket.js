@@ -50,5 +50,6 @@ const server = http.createServer(app);
 // pass the same server to our websocket setup function
 // the websocket server will the run on the same port
 // accepting ws:// connections
-server.listen(3001);
+const PORT = +process.env.PORT || 3001;
+server.listen(PORT);
 setupWebSocket(server);
