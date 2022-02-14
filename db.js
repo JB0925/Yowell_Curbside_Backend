@@ -4,7 +4,6 @@ require("dotenv").config();
 
 const { Client } = require("pg");
 const { getDatabaseUri } = process.env.DATABASE_URL || require("./config");
-
 let db;
 
 if (process.env.NODE_ENV === "production") {

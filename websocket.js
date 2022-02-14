@@ -27,9 +27,13 @@ function setupWebSocket(server) {
     // handle message events
     ctx.on("message", async (message) => {
       try {
-        const number = JSON.parse(message);
+        const status = JSON.parse(message).split("_");
+        const state = status[0];
+        const number = status[1];
         const newStudent = await Student.getStudent(number);
-        wss.clients.forEach((c) => c.send(newStudent));
+        wss.clients.forEach((c) =>
+          c.send(JSON.stringify({ state, newStudent }))
+        );
       } catch (error) {
         console.log(error);
       }

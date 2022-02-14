@@ -30,6 +30,25 @@ app.post("/", async (req, res, next) => {
   }
 });
 
+app.get("/students/status", async (req, res, next) => {
+  try {
+    const loadedStudents = await Student.getLoadedStudents();
+    return res.status(200).json({ loadedStudents });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+app.patch("/:number", async (req, res, next) => {
+  const { number } = req.body;
+  try {
+    const updatedStudentStatus = await Student.changeLoadedStatus(number);
+    return res.status(200).json({ status: updatedStudentStatus });
+  } catch (error) {
+    return next(error);
+  }
+});
+
 app.use((req, res, next) => {
   return res.status(404).json({ message: "Not Found" });
 });

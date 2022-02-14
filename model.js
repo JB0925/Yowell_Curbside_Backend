@@ -45,6 +45,43 @@ class Student {
 
     return result.rows[0];
   }
+
+  static async getLoadedStudents() {
+    const result = await db.query(
+      `SELECT number, name
+       FROM students
+       WHERE isLoaded = $1`,
+      [true]
+    );
+
+    if (!result.rows.length) return [];
+
+    return result.rows.map(({ number, name }) => `#${number}: ${name}`);
+  }
+
+  static async changeLoadedStatus(number) {
+    const studentExists = await db.query(
+      `SELECT number, name, isloaded
+       FROM students
+       WHERE number = $1`,
+      [number]
+    );
+
+    if (!studentExists.rows.length) {
+      throw new Error("No student exists with this number.");
+    }
+
+    const currentLoadedStatus = studentExists.rows[0].isloaded;
+
+    await db.query(
+      `UPDATE students
+       SET isloaded = $1
+       WHERE number = $2`,
+      [!currentLoadedStatus, number]
+    );
+
+    return "Student's loaded status updated";
+  }
 }
 
 module.exports = Student;
