@@ -48,7 +48,7 @@ class Student {
 
   static async getLoadedStudents() {
     const result = await db.query(
-      `SELECT number, name
+      `SELECT number, name, time
        FROM students
        WHERE isLoaded = $1`,
       [true]
@@ -56,7 +56,13 @@ class Student {
 
     if (!result.rows.length) return [];
 
-    return result.rows.map(({ number, name }) => `#${number}: ${name}`);
+    const returnArray = result.rows.map(({ number, name, time }) => ({
+      info: `#${number}: ${name}`,
+      time,
+    }));
+
+    returnArray.sort((a, b) => parseInt(a.time) - parseInt(b.time));
+    return returnArray;
   }
 
   static async changeLoadedStatus(number) {
@@ -72,12 +78,21 @@ class Student {
     }
 
     const currentLoadedStatus = studentExists.rows[0].isloaded;
+    let pickupTime;
+
+    if (!currentLoadedStatus) {
+      pickupTime = new Date().toString();
+      pickupTime = Date.parse(pickupTime);
+    } else {
+      pickupTime = null;
+    }
 
     await db.query(
       `UPDATE students
-       SET isloaded = $1
-       WHERE number = $2`,
-      [!currentLoadedStatus, number]
+       SET isloaded = $1,
+       time = $2
+       WHERE number = $3`,
+      [!currentLoadedStatus, pickupTime, number]
     );
 
     return "Student's loaded status updated";
