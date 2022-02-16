@@ -7,6 +7,16 @@ const WebSocket = require("ws");
 function setupWebSocket(server) {
   // ws instance
   const wss = new WebSocket.Server({ noServer: true });
+  let tm;
+
+  const ping = () => {
+    wss.clients.forEach((c) => c.send("__ping__"));
+    tm = setTimeout(() => {}, 5000);
+  };
+
+  const pong = () => {
+    clearTimeout(tm);
+  };
 
   // handle upgrade of the request
   server.on("upgrade", function upgrade(request, socket, head) {
@@ -25,15 +35,22 @@ function setupWebSocket(server) {
   // what to do after a connection is established
   wss.on("connection", (ctx) => {
     // handle message events
+    console.log("hi");
+    setInterval(ping, 30000);
     ctx.on("message", async (message) => {
       try {
-        const status = JSON.parse(message).split("_");
-        const state = status[0];
-        const number = status[1];
-        const newStudent = await Student.getStudent(number);
-        wss.clients.forEach((c) =>
-          c.send(JSON.stringify({ state, newStudent }))
-        );
+        if (message === "__ping__") {
+          pong();
+          return;
+        } else {
+          const status = JSON.parse(message).split("_");
+          const state = status[0];
+          const number = status[1];
+          const newStudent = await Student.getStudent(number);
+          wss.clients.forEach((c) =>
+            c.send(JSON.stringify({ state, newStudent }))
+          );
+        }
       } catch (error) {
         console.log(error);
       }
