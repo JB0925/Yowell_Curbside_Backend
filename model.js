@@ -1,6 +1,28 @@
 const db = require("./db");
 
 class Student {
+  static combineNames(arr) {
+    let tempUsedNames = [];
+    let newStudentGroupings = [];
+    for (let i = 0; i < arr.length; i++) {
+      let currentStudent = arr[i];
+      for (let j = i + 1; j < arr.length; j++) {
+        let nextStudent = arr[j];
+        if (
+          currentStudent.time == nextStudent.time &&
+          !tempUsedNames.includes(nextStudent.info)
+        ) {
+          arr[i].info += nextStudent.info;
+          tempUsedNames.push(currentStudent.info);
+          tempUsedNames.push(nextStudent.info);
+          arr[j] = {};
+        }
+      }
+      newStudentGroupings.push(arr[i]);
+    }
+    return newStudentGroupings;
+  }
+
   static async getStudent(number) {
     number = number.toString();
 
@@ -66,15 +88,19 @@ class Student {
 
     if (!result.rows.length) return [];
 
-    const returnArray = result.rows.map(({ number, name, time }) => ({
+    let combinedNamesArray = result.rows.map(({ number, name, time }) => ({
       info: `#${number}: ${name}`,
       time,
     }));
 
+    combinedNamesArray = this.combineNames(combinedNamesArray).filter(
+      (n) => n.info !== undefined && n.time !== undefined
+    );
+    combinedNamesArray.sort((a, b) => parseInt(a.time) - parseInt(b.time));
+
     const numberArray = result.rows.map(({ number }) => number);
 
-    returnArray.sort((a, b) => parseInt(a.time) - parseInt(b.time));
-    return [returnArray, numberArray];
+    return [combinedNamesArray, numberArray];
   }
 
   static async changeLoadedStatusOfMultiple(numbers) {
