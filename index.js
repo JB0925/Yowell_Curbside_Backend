@@ -41,8 +41,16 @@ app.get("/students/status", async (req, res, next) => {
 
 app.patch("/:number", async (req, res, next) => {
   const { number } = req.body;
+  let updatedStudentStatus;
   try {
-    const updatedStudentStatus = await Student.changeLoadedStatus(number);
+    if (number.split("+").length > 1) {
+      const numbers = number.split("+");
+      updatedStudentStatus = await Student.changeLoadedStatusOfMultiple(
+        numbers
+      );
+    } else {
+      updatedStudentStatus = await Student.changeLoadedStatus(number);
+    }
     return res.status(200).json({ status: updatedStudentStatus });
   } catch (error) {
     return next(error);

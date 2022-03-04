@@ -46,7 +46,14 @@ function setupWebSocket(server) {
           const status = JSON.parse(message).split("_");
           const state = status[0];
           const number = status[1];
-          const newStudent = await Student.getStudent(number);
+          let newStudent = "";
+          if (number.split("+").length > 1) {
+            const numbers = number.split("+");
+            newStudent = await Student.getMultipleStudents(numbers);
+          } else {
+            newStudent = await Student.getStudent(number);
+          }
+          // newStudent = await Student.getStudent(number);
           wss.clients.forEach((c) =>
             c.send(JSON.stringify({ state, newStudent }))
           );

@@ -3,6 +3,7 @@ const db = require("./db");
 class Student {
   static async getStudent(number) {
     number = number.toString();
+
     const result = await db.query(
       `SELECT number, name
        FROM students
@@ -16,6 +17,15 @@ class Student {
 
     const { name } = result.rows[0];
     return `#${number}: ${name}`;
+  }
+
+  static async getMultipleStudents(numbers) {
+    let student = "";
+    for (let number of numbers) {
+      student += await this.getStudent(number);
+    }
+
+    return student;
   }
 
   static async addStudent(number, name) {
@@ -61,8 +71,16 @@ class Student {
       time,
     }));
 
+    const numberArray = result.rows.map(({ number }) => number);
+
     returnArray.sort((a, b) => parseInt(a.time) - parseInt(b.time));
-    return returnArray;
+    return [returnArray, numberArray];
+  }
+
+  static async changeLoadedStatusOfMultiple(numbers) {
+    for (let number of numbers) {
+      await this.changeLoadedStatus(number);
+    }
   }
 
   static async changeLoadedStatus(number) {
