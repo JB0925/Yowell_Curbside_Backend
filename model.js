@@ -44,7 +44,7 @@ class Student {
   static async getMultipleStudentsByNumber(numbers) {
     let student = "";
     for (let number of numbers) {
-      student += await this.getStudent(number);
+      student += await this.getStudentByNumber(number);
     }
 
     return student;
@@ -62,7 +62,7 @@ class Student {
       throw new Error("No students match this query");
     }
 
-    return result.rows;
+    return result.rows.map((student) => student.name);
   }
 
   static async getStudentByName(name) {

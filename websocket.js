@@ -51,7 +51,7 @@ function setupWebSocket(server) {
             const numbers = number.split("+");
             newStudent = await Student.getMultipleStudentsByNumber(numbers);
           } else {
-            newStudent = await Student.getStudent(number);
+            newStudent = await Student.getStudentByNumber(number);
           }
           wss.clients.forEach((c) =>
             c.send(JSON.stringify({ state, newStudent }))
