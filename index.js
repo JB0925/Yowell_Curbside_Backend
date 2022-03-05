@@ -63,7 +63,6 @@ app.get("/students/fullName/:name", async (req, res, next) => {
 
 app.patch("/:number", async (req, res, next) => {
   const { number, studentName } = req.body;
-  console.log(studentName);
   let updatedStudentStatus;
   try {
     if (number.split("+").length > 1) {
@@ -75,7 +74,7 @@ app.patch("/:number", async (req, res, next) => {
       updatedStudentStatus = await Student.changeLoadedStatus(number);
     }
 
-    if (studentName !== undefined) {
+    if (studentName !== undefined && studentName.length) {
       let studentToAdd = await Student.getStudentByName(studentName);
       const pattern = /\d+/g;
       const studentNumber = studentToAdd.match(pattern).join("");

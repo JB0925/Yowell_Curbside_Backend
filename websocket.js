@@ -35,7 +35,6 @@ function setupWebSocket(server) {
   // what to do after a connection is established
   wss.on("connection", (ctx) => {
     // handle message events
-    console.log("hi");
     setInterval(ping, 30000);
     ctx.on("message", async (message) => {
       try {
@@ -45,7 +44,11 @@ function setupWebSocket(server) {
         } else {
           const status = JSON.parse(message).split("_");
           const state = status[0];
-          const number = status[1];
+          let number = status[1];
+          console.log(number);
+          const pattern = /\d+/g;
+          number = number.match(pattern).join("+");
+
           let newStudent = "";
           if (number.split("+").length > 1) {
             const numbers = number.split("+");
