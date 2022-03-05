@@ -23,7 +23,7 @@ class Student {
     return newStudentGroupings;
   }
 
-  static async getStudent(number) {
+  static async getStudentByNumber(number) {
     number = number.toString();
 
     const result = await db.query(
@@ -41,13 +41,44 @@ class Student {
     return `#${number}: ${name}`;
   }
 
-  static async getMultipleStudents(numbers) {
+  static async getMultipleStudentsByNumber(numbers) {
     let student = "";
     for (let number of numbers) {
       student += await this.getStudent(number);
     }
 
     return student;
+  }
+
+  static async getStudentsByPartiallyMatchedName(partialName) {
+    const result = await db.query(
+      `SELECT name
+       FROM students
+       WHERE name ILIKE '%' || $1 || '%'`,
+      [partialName]
+    );
+
+    if (!result.rows.length) {
+      throw new Error("No students match this query");
+    }
+
+    return result.rows;
+  }
+
+  static async getStudentByName(name) {
+    const result = await db.query(
+      `SELECT number
+       FROM students
+       WHERE name = $1`,
+      [name]
+    );
+
+    if (!result.rows.length) {
+      throw new Error("No student matches this query.");
+    }
+
+    const { number } = result.rows[0];
+    return `#${number}: ${name}`;
   }
 
   static async addStudent(number, name) {

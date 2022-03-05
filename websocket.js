@@ -49,11 +49,10 @@ function setupWebSocket(server) {
           let newStudent = "";
           if (number.split("+").length > 1) {
             const numbers = number.split("+");
-            newStudent = await Student.getMultipleStudents(numbers);
+            newStudent = await Student.getMultipleStudentsByNumber(numbers);
           } else {
             newStudent = await Student.getStudent(number);
           }
-          // newStudent = await Student.getStudent(number);
           wss.clients.forEach((c) =>
             c.send(JSON.stringify({ state, newStudent }))
           );

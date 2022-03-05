@@ -13,7 +13,7 @@ app.use(
 app.get("/:number", async (req, res, next) => {
   const { number } = req.params;
   try {
-    const studentName = await Student.getStudent(number);
+    const studentName = await Student.getStudentByNumber(number);
     return res.status(200).json({ name: studentName });
   } catch (error) {
     return next(error);
@@ -34,6 +34,28 @@ app.get("/students/status", async (req, res, next) => {
   try {
     const loadedStudents = await Student.getLoadedStudents();
     return res.status(200).json({ loadedStudents });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+app.get("/students/partialNames/:partialMatch", async (req, res, next) => {
+  try {
+    const { partialMatch } = req.params;
+    const nameMatches = await Student.getStudentsByPartiallyMatchedName(
+      partialMatch
+    );
+    return res.status(200).json({ nameMatches });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+app.get("/students/fullName/:name", async (req, res, next) => {
+  try {
+    const { name } = req.params;
+    const studentName = await Student.getStudentByName(name);
+    return res.status(200).json({ name: studentName });
   } catch (error) {
     return next(error);
   }
