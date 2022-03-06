@@ -61,25 +61,45 @@ app.get("/students/fullName/:name", async (req, res, next) => {
   }
 });
 
-app.patch("/:number", async (req, res, next) => {
+app.patch("/students/add/:number", async (req, res, next) => {
   const { number, studentName } = req.body;
+  console.log(number);
   let updatedStudentStatus;
   try {
     if (number.split("+").length > 1) {
       const numbers = number.split("+");
-      updatedStudentStatus = await Student.changeLoadedStatusOfMultiple(
+      updatedStudentStatus = await Student.changeLoadedStatusOfMultipleToTrue(
         numbers
       );
     } else {
-      updatedStudentStatus = await Student.changeLoadedStatus(number);
+      updatedStudentStatus = await Student.changeLoadedStatusToTrue(number);
     }
 
     if (studentName !== undefined && studentName.length) {
       let studentToAdd = await Student.getStudentByName(studentName);
       const pattern = /\d+/g;
       const studentNumber = studentToAdd.match(pattern).join("");
-      await Student.changeLoadedStatus(studentNumber);
+      await Student.changeLoadedStatusToTrue(studentNumber);
     }
+    return res.status(200).json({ status: updatedStudentStatus });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+app.patch("/students/remove/:number", async (req, res, next) => {
+  const { number } = req.body;
+  let updatedStudentStatus;
+  try {
+    if (number.split("+").length > 1) {
+      const numbers = number.split("+");
+      updatedStudentStatus = await Student.changeLoadedStatusOfMultipleToFalse(
+        numbers
+      );
+    } else {
+      updatedStudentStatus = await Student.changeLoadedStatusToFalse(number);
+    }
+
     return res.status(200).json({ status: updatedStudentStatus });
   } catch (error) {
     return next(error);

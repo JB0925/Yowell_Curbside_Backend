@@ -134,13 +134,13 @@ class Student {
     return [combinedNamesArray, numberArray];
   }
 
-  static async changeLoadedStatusOfMultiple(numbers) {
+  static async changeLoadedStatusOfMultipleToTrue(numbers) {
     for (let number of numbers) {
-      await this.changeLoadedStatus(number);
+      await this.changeLoadedStatusToTrue(number);
     }
   }
 
-  static async changeLoadedStatus(number) {
+  static async changeLoadedStatusToTrue(number) {
     const studentExists = await db.query(
       `SELECT number, name, isloaded
        FROM students
@@ -167,10 +167,39 @@ class Student {
        SET isloaded = $1,
        time = $2
        WHERE number = $3`,
-      [!currentLoadedStatus, pickupTime, number]
+      [true, pickupTime, number]
     );
 
     return "Student's loaded status updated";
+  }
+
+  static async changeLoadedStatusToFalse(number) {
+    const studentExists = await db.query(
+      `SELECT number, name, isloaded
+       FROM students
+       WHERE number = $1`,
+      [number]
+    );
+
+    if (!studentExists.rows.length) {
+      throw new Error("No student exists with this number.");
+    }
+
+    await db.query(
+      `UPDATE students
+       SET isloaded = $1,
+       time = $2
+       WHERE number = $3`,
+      [false, null, number]
+    );
+
+    return "Student's loaded status updated";
+  }
+
+  static async changeLoadedStatusOfMultipleToFalse(numbers) {
+    for (let number of numbers) {
+      await this.changeLoadedStatusToFalse(number);
+    }
   }
 }
 
