@@ -27,15 +27,22 @@ class Student {
     number = number.toString();
 
     const result = await db.query(
-      `SELECT number, name
+      `SELECT number, name, added
        FROM students
        WHERE number = $1`,
       [number]
     );
 
-    if (!result.rows.length) {
+    if (!result.rows.length || result.rows[0].added) {
       return "Student not found";
     }
+
+    await db.query(
+      `UPDATE students
+       SET added = $1
+       WHERE number = $2`,
+      [true, number]
+    );
 
     const { name } = result.rows[0];
     return `#${number}: ${name}`;
@@ -142,7 +149,7 @@ class Student {
 
   static async changeLoadedStatusToTrue(number) {
     const studentExists = await db.query(
-      `SELECT number, name, isloaded
+      `SELECT number, name, isloaded, added
        FROM students
        WHERE number = $1`,
       [number]
@@ -150,6 +157,10 @@ class Student {
 
     if (!studentExists.rows.length) {
       throw new Error("No student exists with this number.");
+    }
+
+    if (studentExists.rows[0].added) {
+      throw new Error("Student has already been added today.");
     }
 
     const currentLoadedStatus = studentExists.rows[0].isloaded;

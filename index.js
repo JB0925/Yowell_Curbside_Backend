@@ -63,7 +63,6 @@ app.get("/students/fullName/:name", async (req, res, next) => {
 
 app.patch("/students/add/:number", async (req, res, next) => {
   const { number, studentName } = req.body;
-  console.log(number);
   let updatedStudentStatus;
   try {
     if (number.split("+").length > 1) {
@@ -90,6 +89,7 @@ app.patch("/students/add/:number", async (req, res, next) => {
 app.patch("/students/remove/:number", async (req, res, next) => {
   const { number } = req.body;
   let updatedStudentStatus;
+
   try {
     if (number.split("+").length > 1) {
       const numbers = number.split("+");

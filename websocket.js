@@ -45,7 +45,7 @@ function setupWebSocket(server) {
           const status = JSON.parse(message).split("_");
           const state = status[0];
           let number = status[1];
-          console.log(number);
+
           const pattern = /\d+/g;
           number = number.match(pattern).join("+");
 
