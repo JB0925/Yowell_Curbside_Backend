@@ -61,6 +61,15 @@ app.get("/students/fullName/:name", async (req, res, next) => {
   }
 });
 
+app.get("/students/resetAll", async (req, res, next) => {
+  try {
+    await Student.resetAll();
+    return res.status(200).json({ message: "All students have been reset." });
+  } catch (error) {
+    return next(error);
+  }
+});
+
 app.patch("/students/add/:number", async (req, res, next) => {
   const { number, studentName } = req.body;
   let updatedStudentStatus;

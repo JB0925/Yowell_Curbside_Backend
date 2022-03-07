@@ -212,6 +212,16 @@ class Student {
       await this.changeLoadedStatusToFalse(number);
     }
   }
+
+  static async resetAll() {
+    await db.query(
+      `UPDATE students
+       SET isloaded = $1,
+       time = $2,
+       added = $3`,
+      [false, null, false]
+    );
+  }
 }
 
 module.exports = Student;
