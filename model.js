@@ -163,15 +163,8 @@ class Student {
       throw new Error("Student has already been added today.");
     }
 
-    const currentLoadedStatus = studentExists.rows[0].isloaded;
-    let pickupTime;
-
-    if (!currentLoadedStatus) {
-      pickupTime = new Date().toString();
-      pickupTime = Date.parse(pickupTime);
-    } else {
-      pickupTime = null;
-    }
+    let pickupTime = new Date().toString();
+    pickupTime = Date.parse(pickupTime);
 
     await db.query(
       `UPDATE students
