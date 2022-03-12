@@ -243,3 +243,11 @@ describe("testing HTTP route to remove students", () => {
     expect(response.statusCode).toBe(500);
   });
 });
+
+describe("testing the 'getMultipleStudentsByNumber' function", () => {
+  it("gets multiple students by number", async () => {
+    const numbers = "2+5+1";
+    const result = await Student.getMultipleStudentsByNumber(numbers);
+    expect(result).toContain("#2: Tim");
+  });
+});
