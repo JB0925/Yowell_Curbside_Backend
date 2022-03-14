@@ -2,6 +2,24 @@ const express = require("express");
 const cors = require("cors");
 const app = express();
 const Student = require("./model");
+const Bree = require("bree");
+const Graceful = require("@ladjs/graceful");
+
+const bree = new Bree({
+  jobs: [
+    {
+      name: "resetDB",
+      cron: "0 17 ? * *",
+      cronValidate: {
+        useBlankDay: true,
+      },
+    },
+  ],
+});
+
+const graceful = new Graceful({ brees: [bree] });
+graceful.listen();
+bree.start();
 
 app.use(express.json());
 app.use(
