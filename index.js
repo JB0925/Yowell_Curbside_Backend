@@ -9,7 +9,7 @@ const bree = new Bree({
   jobs: [
     {
       name: "resetDB",
-      cron: "0 17 ? * *",
+      cron: "0 17 * * 1-5",
       cronValidate: {
         useBlankDay: true,
       },
