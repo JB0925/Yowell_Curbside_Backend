@@ -89,26 +89,39 @@ app.get("/students/resetAll", async (req, res, next) => {
 });
 
 app.patch("/students/add/:number", async (req, res, next) => {
-  const { number, studentName } = req.body;
-  let updatedStudentStatus;
+  let studentNumber;
+  let { number, studentName } = req.body;
+  console.log(`Number: ${number}, Name: ${studentName}`);
   try {
-    if (number.split("+").length > 1) {
+    // if (studentName !== undefined && studentName.length) {
+    //   let studentToAdd = await Student.getStudentByName(studentName);
+    //   const pattern = /\d+/g;
+    //   studentNumber = studentToAdd.match(pattern).join("");
+    //   number = `${number}+${studentNumber}`;
+    //   await Student.changeLoadedStatusToTrue(studentNumber);
+    // }
+
+    if (number.split("+").length > 1 || (number.length && studentName.length)) {
       const numbers = number.split("+");
-      updatedStudentStatus = await Student.changeLoadedStatusOfMultipleToTrue(
-        numbers
-      );
+      if (studentName !== undefined && studentName.length) {
+        numbers.push(studentName);
+      }
+      studentNumber = await Student.changeLoadedStatusOfMultipleToTrue(numbers);
     } else {
-      updatedStudentStatus = await Student.changeLoadedStatusToTrue(number);
+      studentNumber = await Student.changeLoadedStatusToTrue(
+        number || studentName
+      );
     }
 
-    if (studentName !== undefined && studentName.length) {
-      let studentToAdd = await Student.getStudentByName(studentName);
-      const pattern = /\d+/g;
-      const studentNumber = studentToAdd.match(pattern).join("");
-      await Student.changeLoadedStatusToTrue(studentNumber);
-    }
-    return res.status(200).json({ status: updatedStudentStatus });
+    // if (studentName !== undefined && studentName.length) {
+    //   let studentToAdd = await Student.getStudentByName(studentName);
+    //   const pattern = /\d+/g;
+    //   studentNumber = studentToAdd.match(pattern).join("");
+    //   await Student.changeLoadedStatusToTrue(studentNumber);
+    // }
+    return res.status(200).json({ status: `${studentNumber}` });
   } catch (error) {
+    console.log(error.message);
     return next(error);
   }
 });

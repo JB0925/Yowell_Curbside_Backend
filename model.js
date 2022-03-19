@@ -142,18 +142,42 @@ class Student {
   }
 
   static async changeLoadedStatusOfMultipleToTrue(numbers) {
+    console.log(numbers);
     for (let number of numbers) {
-      await this.changeLoadedStatusToTrue(number);
+      const query = await db.query(
+        `SELECT isloaded
+         FROM students
+         WHERE number = $1
+         OR name = $2`,
+        [number, number]
+      );
+      if (query.rows.length && query.rows[0].isloaded) {
+        throw new Error(
+          "At least one of these students has already been added today."
+        );
+      }
     }
+
+    let multipleNumbers = "";
+    for (let number of numbers) {
+      multipleNumbers += `+${await this.changeLoadedStatusToTrue(number)}`;
+    }
+
+    return multipleNumbers;
   }
 
   static async changeLoadedStatusToTrue(number) {
+    console.log(`This number is ${number}`);
+    if (!number.length) return;
     const studentExists = await db.query(
       `SELECT number, name, isloaded, added
        FROM students
-       WHERE number = $1`,
-      [number]
+       WHERE number = $1
+       OR name = $2`,
+      [number, number]
     );
+
+    console.log(studentExists.rows);
 
     if (!studentExists.rows.length) {
       throw new Error("No student exists with this number.");
@@ -170,11 +194,12 @@ class Student {
       `UPDATE students
        SET isloaded = $1,
        time = $2
-       WHERE number = $3`,
-      [true, pickupTime, number]
+       WHERE number = $3
+       OR name = $4`,
+      [true, pickupTime, number, number]
     );
 
-    return "Student's loaded status updated";
+    return studentExists.rows[0].number;
   }
 
   static async changeLoadedStatusToFalse(number) {
