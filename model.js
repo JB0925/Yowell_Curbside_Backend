@@ -124,9 +124,29 @@ class Student {
       [true]
     );
 
-    if (!result.rows.length) return [];
+    const temp_students_result = await db.query(
+      `SELECT name, time
+       FROM temp_students
+       WHERE isloaded = $1`,
+      [true]
+    );
 
-    let combinedNamesArray = result.rows.map(({ number, name, time }) => ({
+    if (!result.rows.length) {
+      if (!temp_students_result.rows.length) {
+        return [];
+      }
+    }
+
+    if (temp_students_result.rows) {
+      const randomNum = (min, max) =>
+        Math.floor(Math.random() * (max - min)) + min;
+      temp_students_result.rows.forEach(
+        (t) => (t.number = randomNum(500, 1000))
+      );
+    }
+    const newArr = result.rows.concat(temp_students_result.rows);
+
+    let combinedNamesArray = newArr.map(({ number, name, time }) => ({
       info: `#${number}: ${name}`,
       time,
     }));
@@ -231,6 +251,60 @@ class Student {
     }
   }
 
+  static async addStudentWithNoNumber(name) {
+    console.log(name);
+    const checkForStudent = await db.query(
+      `SELECT isloaded, added
+       FROM temp_students
+       WHERE name = $1`,
+      [name]
+    );
+
+    if (checkForStudent.rows.length) {
+      const { isloaded, added } = checkForStudent.rows[0];
+      if (isloaded || added) throw new Error("Student not found");
+    }
+
+    let pickupTime = new Date().toString();
+    pickupTime = Date.parse(pickupTime);
+
+    const result = await db.query(
+      `INSERT INTO temp_students
+       (name, isloaded, time)
+       VALUES
+       ($1, $2, $3)
+       RETURNING name, time`,
+      [name, true, pickupTime]
+    );
+
+    return result.rows[0];
+  }
+
+  static async removeStudentWithNoNumber(name) {
+    console.log(`The name: ${name}`);
+    const studentExists = await db.query(
+      `SELECT *
+       FROM temp_students
+       WHERE name = $1`,
+      [name]
+    );
+
+    if (!studentExists.rows.length) {
+      throw new Error("This student does not exist.");
+    }
+
+    await db.query(
+      `UPDATE temp_students
+       SET isloaded = false,
+       time = NULL,
+       added = true
+       WHERE name = $1`,
+      [name]
+    );
+
+    return;
+  }
+
   static async resetAll() {
     await db.query(
       `UPDATE students
@@ -239,6 +313,8 @@ class Student {
        added = $3`,
       [false, null, false]
     );
+
+    await db.query("DELETE FROM temp_students");
   }
 }
 

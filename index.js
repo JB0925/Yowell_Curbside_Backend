@@ -146,6 +146,29 @@ app.patch("/students/remove/:number", async (req, res, next) => {
   }
 });
 
+app.post("/students/add/noNumber", async (req, res, next) => {
+  try {
+    const { studentToAdd } = req.body;
+    const newStudent = await Student.addStudentWithNoNumber(studentToAdd);
+    return res.status(201).json({ student: newStudent });
+  } catch (error) {
+    console.log(error);
+    return next(error);
+  }
+});
+
+app.patch("/students/remove/noNumber", async (req, res, next) => {
+  try {
+    const { studentToRemove } = req.body;
+    await Student.removeStudentWithNoNumber(studentToRemove);
+    return res.status(200).json({
+      message: `Student ${studentToRemove} successfully removed`,
+    });
+  } catch (error) {
+    return next(error);
+  }
+});
+
 app.use((req, res, next) => {
   return res.status(404).json({ message: "Not Found" });
 });
