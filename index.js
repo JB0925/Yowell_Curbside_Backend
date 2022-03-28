@@ -91,7 +91,7 @@ app.get("/students/resetAll", async (req, res, next) => {
 app.patch("/students/add/:number", async (req, res, next) => {
   let studentNumber;
   let { number, studentName } = req.body;
-  console.log(`Number: ${number}, Name: ${studentName}`);
+  // console.log(`Number: ${number}, Name: ${studentName}`);
   try {
     // if (studentName !== undefined && studentName.length) {
     //   let studentToAdd = await Student.getStudentByName(studentName);
@@ -121,7 +121,6 @@ app.patch("/students/add/:number", async (req, res, next) => {
     // }
     return res.status(200).json({ status: `${studentNumber}` });
   } catch (error) {
-    console.log(error.message);
     return next(error);
   }
 });
@@ -152,7 +151,6 @@ app.post("/students/add/noNumber", async (req, res, next) => {
     const newStudent = await Student.addStudentWithNoNumber(studentToAdd);
     return res.status(201).json({ student: newStudent });
   } catch (error) {
-    console.log(error);
     return next(error);
   }
 });

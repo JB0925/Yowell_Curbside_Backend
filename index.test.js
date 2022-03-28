@@ -3,6 +3,7 @@ const app = require("./index");
 const db = require("./db");
 const request = require("supertest");
 const Student = require("./model");
+const { response } = require("express");
 
 beforeEach(async () => {
   await db.query(
@@ -19,6 +20,7 @@ beforeEach(async () => {
 
 afterEach(async () => {
   await db.query("DELETE FROM students");
+  await db.query("DELETE from temp_students");
 });
 
 afterAll(async () => {
@@ -87,6 +89,14 @@ describe("testing HTTP request to get all students who have been loaded", () => 
       ["1", "3"]
     );
 
+    await db.query(
+      `INSERT INTO temp_students
+       (name, isloaded, time)
+       VALUES
+       ($1, $2, $3)`,
+      ["Arthur", true, "156785456744"]
+    );
+
     const response = await request(app).get("/students/status");
     expect(response.statusCode).toBe(200);
     expect(response.body.loadedStudents.length).toBe(2);
@@ -98,20 +108,18 @@ describe("testing HTTP request to get all students who have been loaded", () => 
 
 describe("testing HTTP request to get names of students who match a partial query", () => {
   it("gets an array of full names of students whose names match a partial query", async () => {
-    const nameGetter = jest
-      .spyOn(Student, "getStudentsByPartiallyMatchedName")
-      .mockReturnValueOnce(["Sarah", "Mark", "Mary"]);
     const partialNameToMatch = "ar";
     const response = await request(app).get(
       `/students/partialNames/${partialNameToMatch}`
     );
 
     expect(response.statusCode).toBe(200);
+    console.log(response.body.nameMatches);
+    expect(response.body.nameMatches).toEqual(["Sarah", "Mary", "Mark"]);
     expect(response.body.nameMatches).toHaveLength(3);
     expect(response.body.nameMatches).toContain("Sarah");
     expect(response.body.nameMatches).toContain("Mark");
     expect(response.body.nameMatches).toContain("Mary");
-    expect(nameGetter).toHaveBeenCalled();
   });
 
   it("throws an error if no matches are found for the partial name query", async () => {
@@ -208,12 +216,17 @@ describe("testing HTTP route to add students to the list of students waiting to 
 
     const duplicateResponse = await request(app)
       .patch("/students/add/2")
-      .send({ number: "2" });
-    expect(duplicateResponse.statusCode).toBe(200);
+      .send({ number: "2", studentName: "Joe" });
+    expect(duplicateResponse.statusCode).toBe(500);
 
     const studentCheck = await request(app).get("/students/status");
     expect(studentCheck.body.loadedStudents[1]).toHaveLength(3);
     expect(studentCheck.body.loadedStudents[1]).toContain("5");
+  });
+
+  it("doesn't add a student for whom a number does not exist", async () => {
+    const response = await request(app).patch("/students/add/395").send("395");
+    expect(response.statusCode).toBe(500);
   });
 });
 
@@ -249,5 +262,121 @@ describe("testing the 'getMultipleStudentsByNumber' function", () => {
     const numbers = "2+5+1";
     const result = await Student.getMultipleStudentsByNumber(numbers);
     expect(result).toContain("#2: Tim");
+  });
+});
+
+describe("testing the routes to add students who have no number", () => {
+  it("adds a student with no number to the temp_students table", async () => {
+    const studentName = "tim";
+    const body = { studentToAdd: studentName };
+    const response = await request(app)
+      .post("/students/add/noNumber")
+      .send(body);
+
+    expect(response.statusCode).toBe(201);
+    expect(response.body.student.name).toBe("tim");
+    expect(response.body.student.time).not.toBe(null);
+    expect(response.body.student.time).toHaveLength(13);
+  });
+
+  it("does not allow a student to be entered twice", async () => {
+    const studentName = "tim";
+    const body = { studentToAdd: studentName };
+    const response = await request(app)
+      .post("/students/add/noNumber")
+      .send(body);
+
+    expect(response.statusCode).toBe(201);
+    expect(response.body.student.name).toBe("tim");
+    expect(response.body.student.time).not.toBe(null);
+    expect(response.body.student.time).toHaveLength(13);
+
+    const response2 = await request(app)
+      .post("/students/add/noNumber")
+      .send(body);
+
+    expect(response2.statusCode).toBe(500);
+    expect(response2.body.error.message).toBe("Student not found");
+  });
+});
+
+/** MODEL TESTING */
+describe("testing the model to remove students who have no number", () => {
+  it("sets isloaded to false for a student with no number from the temporary students table", async () => {
+    const result = await db.query(
+      `INSERT INTO temp_students
+       (name, time, isloaded)
+       VALUES
+       ($1, $2, $3)
+       RETURNING name, time, isloaded`,
+      ["joe", "167856788654", true]
+    );
+
+    await Student.removeStudentWithNoNumber("joe");
+    const newResult = await db.query(
+      `SELECT *
+       FROM temp_students
+       WHERE name = $1`,
+      ["joe"]
+    );
+
+    expect(newResult.rows[0].added).toBe(true);
+    expect(newResult.rows[0].time).toBeNull();
+    expect(newResult.rows[0].isloaded).toBe(false);
+  });
+
+  it("throws an error when looking for a student that does not exist in the temp student table", async () => {
+    try {
+      await Student.removeStudentWithNoNumber("Aaron");
+    } catch (error) {
+      expect(error.message).toBe("This student does not exist.");
+    }
+  });
+});
+
+describe("testing the model to get a student's number using their name as a lookup", () => {
+  it("returns a student's number given a name that is in the database", async () => {
+    const result = await Student.getStudentByName("Joe");
+    expect(result).toBe("#1: Joe");
+  });
+
+  it("throws an error if trying to lookup a student who is not in the database", async () => {
+    try {
+      await Student.getStudentByName("Aaron");
+    } catch (error) {
+      expect(error.message).toBe("No student matches this query.");
+    }
+  });
+});
+
+describe("testing that the model to add a student by number throws an error if the number is not found", () => {
+  it("throws an error when passed a number that is not in the database", async () => {
+    try {
+      await Student.changeLoadedStatusToTrue("3956");
+    } catch (error) {
+      expect(error.message).toBe("No student exists with this number.");
+    }
+  });
+
+  it("alerts that the student's number has already been called today if trying to add them more than once", async () => {
+    await db.query(
+      `UPDATE students
+       SET added = $1
+       WHERE number = $2`,
+      [true, "1"]
+    );
+    try {
+      await Student.changeLoadedStatusToTrue("1");
+    } catch (error) {
+      expect(error.message).toBe("Student has already been added today.");
+    }
+  });
+});
+
+describe("testing that an empty array is returned when there are no loaded students", () => {
+  it("returns an empty array when there are no loaded students", async () => {
+    await db.query("DELETE FROM students");
+    const result = await Student.getLoadedStudents();
+    expect(result).toEqual([]);
   });
 });

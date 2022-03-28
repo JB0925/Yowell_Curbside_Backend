@@ -162,7 +162,6 @@ class Student {
   }
 
   static async changeLoadedStatusOfMultipleToTrue(numbers) {
-    console.log(numbers);
     for (let number of numbers) {
       const query = await db.query(
         `SELECT isloaded
@@ -187,7 +186,6 @@ class Student {
   }
 
   static async changeLoadedStatusToTrue(number) {
-    console.log(`This number is ${number}`);
     if (!number.length) return;
     const studentExists = await db.query(
       `SELECT number, name, isloaded, added
@@ -196,8 +194,6 @@ class Student {
        OR name = $2`,
       [number, number]
     );
-
-    console.log(studentExists.rows);
 
     if (!studentExists.rows.length) {
       throw new Error("No student exists with this number.");
@@ -252,7 +248,6 @@ class Student {
   }
 
   static async addStudentWithNoNumber(name) {
-    console.log(name);
     const checkForStudent = await db.query(
       `SELECT isloaded, added
        FROM temp_students
@@ -281,7 +276,6 @@ class Student {
   }
 
   static async removeStudentWithNoNumber(name) {
-    console.log(`The name: ${name}`);
     const studentExists = await db.query(
       `SELECT *
        FROM temp_students
