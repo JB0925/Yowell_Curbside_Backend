@@ -108,16 +108,16 @@ describe("testing HTTP request to get all students who have been loaded", () => 
 
 describe("testing HTTP request to get names of students who match a partial query", () => {
   it("gets an array of full names of students whose names match a partial query", async () => {
-    const partialNameToMatch = "ar";
+    const partialNameToMatch = "Ma";
     const response = await request(app).get(
       `/students/partialNames/${partialNameToMatch}`
     );
 
     expect(response.statusCode).toBe(200);
     console.log(response.body.nameMatches);
-    expect(response.body.nameMatches).toEqual(["Sarah", "Mary", "Mark"]);
-    expect(response.body.nameMatches).toHaveLength(3);
-    expect(response.body.nameMatches).toContain("Sarah");
+    expect(response.body.nameMatches).toEqual(["Mary", "Mark"]);
+    expect(response.body.nameMatches).toHaveLength(2);
+    // expect(response.body.nameMatches).toContain("Sarah");
     expect(response.body.nameMatches).toContain("Mark");
     expect(response.body.nameMatches).toContain("Mary");
   });

@@ -69,7 +69,18 @@ class Student {
       throw new Error("No students match this query");
     }
 
-    return result.rows.map((student) => student.name);
+    let nameArray = result.rows.map((student) => student.name);
+    const x = nameArray.filter((n) =>
+      n
+        .split(" ")
+        .some(
+          (b) =>
+            b.startsWith(partialName) && (b.indexOf(".") === -1 || b.length > 2)
+        )
+    );
+    // console.log(x.length, nameArray.length);
+    return x;
+    // return result.rows.map((student) => student.name);
   }
 
   static async getStudentByName(name) {
