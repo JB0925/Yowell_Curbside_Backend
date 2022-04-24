@@ -321,6 +321,16 @@ class Student {
 
     await db.query("DELETE FROM temp_students");
   }
+
+  static async getAllNamesAndNumbers() {
+    const result = await db.query(
+      `SELECT number, name
+       FROM students`
+    );
+
+    result.rows.sort((a, b) => parseInt(a.number) - parseInt(b.number));
+    return result.rows;
+  }
 }
 
 module.exports = Student;
