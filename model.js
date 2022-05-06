@@ -75,12 +75,11 @@ class Student {
         .split(" ")
         .some(
           (b) =>
-            b.startsWith(partialName) && (b.indexOf(".") === -1 || b.length > 2)
+            b.toLowerCase().startsWith(partialName.toLowerCase()) &&
+            (b.indexOf(".") === -1 || b.length > 2)
         )
     );
-    // console.log(x.length, nameArray.length);
     return x;
-    // return result.rows.map((student) => student.name);
   }
 
   static async getStudentByName(name) {

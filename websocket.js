@@ -45,8 +45,7 @@ function setupWebSocket(server) {
           const status = JSON.parse(message).split("_");
           const state = status[0];
           let number = status[1];
-          console.log(`The number is: ${number}`);
-          console.log(state, number);
+
           if (number === "Student not found" || number === undefined) return;
 
           const pattern = /\d+/g;
@@ -54,7 +53,6 @@ function setupWebSocket(server) {
             !number.match(pattern) ||
             parseInt(number.match(pattern)[0]) >= 500
           ) {
-            console.log("heckyea");
             if (state !== "add") {
               const name = number.split(": ").pop();
               await Student.removeStudentWithNoNumber(name);
@@ -70,12 +68,12 @@ function setupWebSocket(server) {
           let newStudent = "";
           if (number.split("+").length > 1) {
             const numbers = number.split("+");
-            console.log(`Your numbers are: ${numbers}`);
+
             newStudent = await Student.getMultipleStudentsByNumber(numbers);
           } else {
             newStudent = await Student.getStudentByNumber(number);
           }
-          console.log(`newStudents: ${newStudent}`);
+
           if (newStudent !== "Student not found" && newStudent !== undefined) {
             wss.clients.forEach((c) =>
               c.send(JSON.stringify({ state, newStudent }))
