@@ -4,6 +4,11 @@ const app = express();
 const Student = require("./model");
 const Bree = require("bree");
 const Graceful = require("@ladjs/graceful");
+const LRU = require("lru-cache");
+
+const cache = new LRU({
+  max: 20,
+});
 
 const bree = new Bree({
   jobs: [
@@ -60,9 +65,10 @@ app.get("/students/status", async (req, res, next) => {
 app.get("/students/partialNames/:partialMatch", async (req, res, next) => {
   try {
     const { partialMatch } = req.params;
-    const nameMatches = await Student.getStudentsByPartiallyMatchedName(
-      partialMatch
-    );
+    const nameMatches =
+      cache.get(partialMatch) ||
+      (await Student.getStudentsByPartiallyMatchedName(partialMatch));
+    cache.set(partialMatch, nameMatches);
     return res.status(200).json({ nameMatches });
   } catch (error) {
     return next(error);
@@ -91,16 +97,8 @@ app.get("/students/resetAll", async (req, res, next) => {
 app.patch("/students/add/:number", async (req, res, next) => {
   let studentNumber;
   let { number, studentName } = req.body;
-  // console.log(`Number: ${number}, Name: ${studentName}`);
-  try {
-    // if (studentName !== undefined && studentName.length) {
-    //   let studentToAdd = await Student.getStudentByName(studentName);
-    //   const pattern = /\d+/g;
-    //   studentNumber = studentToAdd.match(pattern).join("");
-    //   number = `${number}+${studentNumber}`;
-    //   await Student.changeLoadedStatusToTrue(studentNumber);
-    // }
 
+  try {
     if (number.split("+").length > 1 || (number.length && studentName.length)) {
       const numbers = number.split("+");
       if (studentName !== undefined && studentName.length) {
@@ -112,13 +110,6 @@ app.patch("/students/add/:number", async (req, res, next) => {
         number || studentName
       );
     }
-
-    // if (studentName !== undefined && studentName.length) {
-    //   let studentToAdd = await Student.getStudentByName(studentName);
-    //   const pattern = /\d+/g;
-    //   studentNumber = studentToAdd.match(pattern).join("");
-    //   await Student.changeLoadedStatusToTrue(studentNumber);
-    // }
     return res.status(200).json({ status: `${studentNumber}` });
   } catch (error) {
     return next(error);
