@@ -5,6 +5,11 @@ const Student = require("./model");
 const Bree = require("bree");
 const Graceful = require("@ladjs/graceful");
 const LRU = require("lru-cache");
+const logger = require("./logger");
+const {
+  studentNameIsPresent,
+  moreThanOneStudentIsPresentToBeAdded,
+} = require("./helpers");
 
 const cache = new LRU({
   max: 20,
@@ -47,6 +52,7 @@ app.post("/", async (req, res, next) => {
   const { number, name } = req.body;
   try {
     const newStudent = await Student.addStudent(number, name);
+    logger.info(`Adding a new student to the database: ${newStudent}`);
     return res.status(201).json({ student: newStudent });
   } catch (error) {
     return next(error);
@@ -58,6 +64,7 @@ app.get("/students/status", async (req, res, next) => {
     const loadedStudents = await Student.getLoadedStudents();
     return res.status(200).json({ loadedStudents });
   } catch (error) {
+    logger.error("/students/status - GET all students", error);
     return next(error);
   }
 });
@@ -71,6 +78,9 @@ app.get("/students/partialNames/:partialMatch", async (req, res, next) => {
     cache.set(partialMatch, nameMatches);
     return res.status(200).json({ nameMatches });
   } catch (error) {
+    logger.error(
+      `An error occurred while getting partial name matches: ${error}`
+    );
     return next(error);
   }
 });
@@ -81,6 +91,10 @@ app.get("/students/fullName/:name", async (req, res, next) => {
     const studentName = await Student.getStudentByName(name);
     return res.status(200).json({ name: studentName });
   } catch (error) {
+    logger.error(
+      "An error occurred while getting a student by full name: ",
+      error
+    );
     return next(error);
   }
 });
@@ -90,6 +104,10 @@ app.get("/students/resetAll", async (req, res, next) => {
     await Student.resetAll();
     return res.status(200).json({ message: "All students have been reset." });
   } catch (error) {
+    logger.error(
+      "An error occurred while resetting the status of students in the DB: ",
+      error
+    );
     return next(error);
   }
 });
@@ -99,19 +117,25 @@ app.patch("/students/add/:number", async (req, res, next) => {
   let { number, studentName } = req.body;
 
   try {
-    if (number.split("+").length > 1 || (number.length && studentName.length)) {
+    // check to see if more than one student is coming from the client,
+    // which can mean several numbers, a number and a name, etc.
+    if (moreThanOneStudentIsPresentToBeAdded(number, studentName)) {
       const numbers = number.split("+");
-      if (studentName !== undefined && studentName.length) {
+      if (studentNameIsPresent(studentName)) {
         numbers.push(studentName);
       }
       studentNumber = await Student.changeLoadedStatusOfMultipleToTrue(numbers);
     } else {
+      // otherwise, we only have one student to add, and it will either
+      // be a student name or student number.
       studentNumber = await Student.changeLoadedStatusToTrue(
         number || studentName
       );
     }
+    logger.info(`Students added: ${studentNumber}`);
     return res.status(200).json({ status: `${studentNumber}` });
   } catch (error) {
+    logger.error("/students/add/number", error);
     return next(error);
   }
 });
@@ -132,6 +156,10 @@ app.patch("/students/remove/:number", async (req, res, next) => {
 
     return res.status(200).json({ status: updatedStudentStatus });
   } catch (error) {
+    logger.error(
+      "An error occurred while changing loaded status to false: ",
+      error
+    );
     return next(error);
   }
 });
@@ -142,6 +170,10 @@ app.post("/students/add/noNumber", async (req, res, next) => {
     const newStudent = await Student.addStudentWithNoNumber(studentToAdd);
     return res.status(201).json({ student: newStudent });
   } catch (error) {
+    logger.error(
+      "An error occurred while adding a student with no number: ",
+      error
+    );
     return next(error);
   }
 });
@@ -154,6 +186,10 @@ app.patch("/students/remove/noNumber", async (req, res, next) => {
       message: `Student ${studentToRemove} successfully removed`,
     });
   } catch (error) {
+    logger.error(
+      "An error occurred while removing a student with no number: ",
+      error
+    );
     return next(error);
   }
 });

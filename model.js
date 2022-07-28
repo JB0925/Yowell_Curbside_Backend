@@ -1,6 +1,22 @@
 const db = require("./db");
+const { BadRequestError, ConflictError } = require("./expressError");
+const logger = require("./logger");
 
 class Student {
+  /**
+   * This function is needed because, if a page gets
+   * refreshed by the client, we need to send a list of students
+   * who have been added for the day. The student list needs:
+   * 1). To be correctly ordered by time entered.
+   * 2). To be grouped by all students who were entered at the same time.
+   * 3). Idempotent in the sense that, if you refresh the page ten times
+   *  and nothing else has changed in between, it needs to return the same
+   *  results each time.
+   *
+   * @param {array of objects} arr
+   * @returns an array of objects of students who are currently in the
+   * queue to be picked up.
+   */
   static combineNames(arr) {
     let tempUsedNames = [];
     let newStudentGroupings = [];
@@ -12,7 +28,17 @@ class Student {
           currentStudent.time == nextStudent.time &&
           !tempUsedNames.includes(nextStudent.info)
         ) {
-          arr[i].info += nextStudent.info;
+          // add the student who should be with them and
+          // order them by number.
+          arr[i].info += ` ${nextStudent.info}`;
+          arr[i].info =
+            "#" +
+            arr[i].info
+              .split("#")
+              .sort((a, b) => parseInt(a) - parseInt(b))
+              .filter((name) => name !== "" && name !== "undefined")
+              .join(" #");
+
           tempUsedNames.push(currentStudent.info);
           tempUsedNames.push(nextStudent.info);
           arr[j] = {};
@@ -66,7 +92,7 @@ class Student {
     );
 
     if (!result.rows.length) {
-      throw new Error("No students match this query");
+      throw new BadRequestError("No students match this query", 400);
     }
 
     let nameArray = result.rows.map((student) => student.name);
@@ -91,7 +117,7 @@ class Student {
     );
 
     if (!result.rows.length) {
-      throw new Error("No student matches this query.");
+      throw new BadRequestError("No student matches this query.", 400);
     }
 
     const { number } = result.rows[0];
@@ -100,7 +126,7 @@ class Student {
 
   static async addStudent(number, name) {
     if (!number || !name) {
-      throw new Error("You must provide a name and number");
+      throw new BadRequestError("You must provide a name and number");
     }
 
     const duplicateCheck = await db.query(
@@ -111,7 +137,7 @@ class Student {
     );
 
     if (duplicateCheck.rows.length) {
-      throw new Error("A student exists with this number.");
+      throw new ConflictError("A student exists with this number.");
     }
 
     const result = await db.query(
@@ -127,6 +153,8 @@ class Student {
   }
 
   static async getLoadedStudents() {
+    // Get all students in the queue from both the regular
+    // database and the temporary, "just for today" database.
     const result = await db.query(
       `SELECT number, name, time
        FROM students
@@ -141,12 +169,20 @@ class Student {
       [true]
     );
 
+    // If there aren't any students loaded from
+    // either the regular DB or the one for students
+    // for the day, return an empty array.
     if (!result.rows.length) {
       if (!temp_students_result.rows.length) {
         return [];
       }
     }
 
+    // If there are students in the queue from the temp DB,
+    // assign them a random number between 500 - 999. This number
+    // does not matter and is only used on the frontend so that a separate
+    // case is not created when trying to remove students. The number can
+    // and will change, and that is ok.
     if (temp_students_result.rows) {
       const randomNum = (min, max) =>
         Math.floor(Math.random() * (max - min)) + min;
@@ -156,22 +192,33 @@ class Student {
     }
     const newArr = result.rows.concat(temp_students_result.rows);
 
+    // Merge the two arrays together, making sure to add the info
+    // for those students in the temp DB as well.
     let combinedNamesArray = newArr.map(({ number, name, time }) => ({
       info: `#${number}: ${name}`,
       time,
     }));
 
+    // Take all students who are currently loaded in the queue and place
+    // them with the other students they are supposed to go with, if any
+    // at all. Finally, sort each of those groups by the time they were
+    // entered into the system.
     combinedNamesArray = this.combineNames(combinedNamesArray).filter(
       (n) => n.info !== undefined && n.time !== undefined
     );
     combinedNamesArray.sort((a, b) => parseInt(a.time) - parseInt(b.time));
 
+    // We return all of the used numbers, too, so that on the client side,
+    // they can return early if a number has been entered that has already
+    // been used for the day.
     const numberArray = result.rows.map(({ number }) => number);
 
     return [combinedNamesArray, numberArray];
   }
 
   static async changeLoadedStatusOfMultipleToTrue(numbers) {
+    // There is potential for raw names to be included in the "numbers"
+    // array, so we query for both names and numbers.
     for (let number of numbers) {
       const query = await db.query(
         `SELECT isloaded
@@ -180,8 +227,10 @@ class Student {
          OR name = $2`,
         [number, number]
       );
+
+      // If any of the names have already been loaded, throw a ConflictError.
       if (query.rows.length && query.rows[0].isloaded) {
-        throw new Error(
+        throw new ConflictError(
           "At least one of these students has already been added today."
         );
       }
@@ -206,11 +255,11 @@ class Student {
     );
 
     if (!studentExists.rows.length) {
-      throw new Error("No student exists with this number.");
+      throw new BadRequestError("No student exists with this number.");
     }
 
     if (studentExists.rows[0].added) {
-      throw new Error("Student has already been added today.");
+      throw new ConflictError("Student has already been added today.");
     }
 
     let pickupTime = new Date().toString();
@@ -237,7 +286,7 @@ class Student {
     );
 
     if (!studentExists.rows.length) {
-      throw new Error("No student exists with this number.");
+      throw new BadRequestError("No student exists with this number.");
     }
 
     await db.query(
@@ -267,7 +316,7 @@ class Student {
 
     if (checkForStudent.rows.length) {
       const { isloaded, added } = checkForStudent.rows[0];
-      if (isloaded || added) throw new Error("Student not found");
+      if (isloaded || added) throw new BadRequestError("Student not found");
     }
 
     let pickupTime = new Date().toString();
@@ -294,7 +343,7 @@ class Student {
     );
 
     if (!studentExists.rows.length) {
-      throw new Error("This student does not exist.");
+      throw new BadRequestError("This student does not exist.");
     }
 
     await db.query(

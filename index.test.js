@@ -53,7 +53,7 @@ describe("testing HTTP requests to add a student to the database", () => {
   it("throws an error when trying to add a student with a number that has already been used", async () => {
     const newStudent = { number: "3", name: "Lainey" };
     const response = await request(app).post("/").send(newStudent);
-    expect(response.statusCode).toBe(500);
+    expect(response.statusCode).toBe(409);
     expect(response.body.error.message).toEqual(
       "A student exists with this number."
     );
@@ -62,7 +62,7 @@ describe("testing HTTP requests to add a student to the database", () => {
   it("throws an error when a name is not provided", async () => {
     const newStudent = { number: "17" };
     const response = await request(app).post("/").send(newStudent);
-    expect(response.statusCode).toBe(500);
+    expect(response.statusCode).toBe(400);
     expect(response.body.error.message).toEqual(
       "You must provide a name and number"
     );
@@ -71,7 +71,7 @@ describe("testing HTTP requests to add a student to the database", () => {
   it("throws an error when a number is not provided", async () => {
     const newStudent = { name: "Carl" };
     const response = await request(app).post("/").send(newStudent);
-    expect(response.statusCode).toBe(500);
+    expect(response.statusCode).toBe(400);
     expect(response.body.error.message).toEqual(
       "You must provide a name and number"
     );
@@ -101,7 +101,9 @@ describe("testing HTTP request to get all students who have been loaded", () => 
     expect(response.statusCode).toBe(200);
     expect(response.body.loadedStudents.length).toBe(2);
     expect(response.body.loadedStudents[1]).toContain("3");
-    expect(response.body.loadedStudents[0][0].info).toEqual("#1: Joe#3: Sarah");
+    expect(response.body.loadedStudents[0][0].info).toEqual(
+      "#1: Joe  #3: Sarah"
+    );
     expect(response.body.loadedStudents[1].length).toBe(2);
   });
 });
@@ -114,10 +116,8 @@ describe("testing HTTP request to get names of students who match a partial quer
     );
 
     expect(response.statusCode).toBe(200);
-    console.log(response.body.nameMatches);
     expect(response.body.nameMatches).toEqual(["Mary", "Mark"]);
     expect(response.body.nameMatches).toHaveLength(2);
-    // expect(response.body.nameMatches).toContain("Sarah");
     expect(response.body.nameMatches).toContain("Mark");
     expect(response.body.nameMatches).toContain("Mary");
   });
@@ -128,7 +128,7 @@ describe("testing HTTP request to get names of students who match a partial quer
       `/students/partialNames/${partialNameToMatch}`
     );
 
-    expect(response.statusCode).toBe(500);
+    expect(response.statusCode).toBe(400);
     expect(response.body.error.message).toBe("No students match this query");
   });
 });
@@ -148,7 +148,7 @@ describe("testing HTTP request to get student data by student name", () => {
   it("throws an error when given a name not found in the DB", async () => {
     const response = await request(app).get("/students/fullName/Alex");
 
-    expect(response.statusCode).toBe(500);
+    expect(response.statusCode).toBe(400);
     expect(response.body.error.message).toBe("No student matches this query.");
   });
 });
@@ -217,7 +217,7 @@ describe("testing HTTP route to add students to the list of students waiting to 
     const duplicateResponse = await request(app)
       .patch("/students/add/2")
       .send({ number: "2", studentName: "Joe" });
-    expect(duplicateResponse.statusCode).toBe(500);
+    expect(duplicateResponse.statusCode).toBe(409);
 
     const studentCheck = await request(app).get("/students/status");
     expect(studentCheck.body.loadedStudents[1]).toHaveLength(3);
@@ -253,7 +253,7 @@ describe("testing HTTP route to remove students", () => {
     const response = await request(app)
       .patch("/students/remove/17")
       .send(numberToRemove);
-    expect(response.statusCode).toBe(500);
+    expect(response.statusCode).toBe(400);
   });
 });
 
@@ -295,8 +295,28 @@ describe("testing the routes to add students who have no number", () => {
       .post("/students/add/noNumber")
       .send(body);
 
-    expect(response2.statusCode).toBe(500);
+    expect(response2.statusCode).toBe(400);
     expect(response2.body.error.message).toBe("Student not found");
+  });
+});
+
+describe("testing HTTP request to get all students in student database ordered and loaded into an array.", () => {
+  it("loads all students in the table into an array and orders them by number.", async () => {
+    const result = await db.query(
+      `SELECT * FROM students
+       WHERE number IN
+       ('1', '2', '3', '4', '5')`
+    );
+    expect(result.rows.length).toBe(5);
+    const response = await request(app).get("/students/studentList");
+    expect(response.body.studentList.length).toBe(5);
+    const [joe, tim, sarah, mary, mark] = response.body.studentList;
+    const studentNumbers = response.body.studentList.map((student) =>
+      parseInt(student.number)
+    );
+    expect([1, 2, 3, 4, 5]).toEqual(studentNumbers);
+    expect(joe.name).toBe("Joe");
+    expect(mark.name).toBe("Mark");
   });
 });
 

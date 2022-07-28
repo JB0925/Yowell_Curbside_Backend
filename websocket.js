@@ -1,8 +1,16 @@
 const http = require("http");
 const app = require("./index");
 const Student = require("./model");
-
+const logger = require("./logger");
 const WebSocket = require("ws");
+const {
+  studentIsNotInRegularStudentGroup,
+  removeStudentWhoIsNotInRegularStudentGroup,
+  sendCurrentState,
+  moreThanOneStudentInData,
+  studentNotFound,
+  getNumberFromNumberString,
+} = require("./helpers");
 
 function setupWebSocket(server) {
   // ws instance
@@ -38,50 +46,62 @@ function setupWebSocket(server) {
     setInterval(ping, 30000);
     ctx.on("message", async (message) => {
       try {
+        // handle connection keepalive messages
         if (message === "__ping__") {
           pong();
           return;
+        }
+
+        const newMessage = JSON.parse(message).split("_");
+        const state = newMessage[0];
+        let number = newMessage[1];
+
+        // If whatever data is present in the message is not a
+        // student name or number, return early.
+        if (studentNotFound(number)) return;
+
+        // If a student does NOT have a curbside number and we are
+        // trying to remove them, their case is handled a little differently
+        // due to being stored in a different database, so we handle it
+        // and then return early.
+        if (studentIsNotInRegularStudentGroup(number)) {
+          if (state !== "add") {
+            await removeStudentWhoIsNotInRegularStudentGroup(number);
+          }
+          sendCurrentState(wss, {
+            state,
+            newStudent: number,
+          });
+          return;
+        }
+
+        // strip off any potential leading plus signs
+        number = getNumberFromNumberString(number);
+
+        // if there is more than one student number in the number
+        // string, split it and get students for all numbers present
+        // otherwise, just get the one student's number
+        let newStudent = "";
+        if (moreThanOneStudentInData(number)) {
+          const numbers = number.split("+");
+          newStudent = await Student.getMultipleStudentsByNumber(numbers);
         } else {
-          const status = JSON.parse(message).split("_");
-          const state = status[0];
-          let number = status[1];
+          newStudent = await Student.getStudentByNumber(number);
+        }
+        logger.info(newStudent);
 
-          if (number === "Student not found" || number === undefined) return;
-
-          const pattern = /\d+/g;
-          if (
-            !number.match(pattern) ||
-            parseInt(number.match(pattern)[0]) >= 500
-          ) {
-            if (state !== "add") {
-              const name = number.split(": ").pop();
-              await Student.removeStudentWithNoNumber(name);
-            }
-
-            wss.clients.forEach((c) => {
-              c.send(JSON.stringify({ state, newStudent: number }));
-            });
-            return;
-          }
-          number = number.match(pattern).join("+");
-
-          let newStudent = "";
-          if (number.split("+").length > 1) {
-            const numbers = number.split("+");
-
-            newStudent = await Student.getMultipleStudentsByNumber(numbers);
-          } else {
-            newStudent = await Student.getStudentByNumber(number);
-          }
-
-          if (newStudent !== "Student not found" && newStudent !== undefined) {
-            wss.clients.forEach((c) =>
-              c.send(JSON.stringify({ state, newStudent }))
-            );
-          }
+        // In this case, "student not found" could be a number
+        // that doesn't exist, or a number that has already been used
+        // and can't be used again today. Finally, take the state (add or remove)
+        // and the new student string, and send them to each client in the websocket.
+        if (!studentNotFound(newStudent)) {
+          sendCurrentState(wss, {
+            state,
+            newStudent,
+          });
         }
       } catch (error) {
-        console.log(error);
+        logger.error(error);
       }
     });
 

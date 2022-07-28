@@ -18,7 +18,14 @@ class BadRequestError extends ExpressError {
   }
 }
 
+class ConflictError extends ExpressError {
+  constructor(message = "This resource already exists.", status = 409) {
+    super(message, status);
+  }
+}
+
 module.exports = {
+  ConflictError,
   ExpressError,
   NotFoundError,
   BadRequestError,
