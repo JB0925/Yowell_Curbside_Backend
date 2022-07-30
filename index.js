@@ -38,7 +38,7 @@ app.use(
   })
 );
 app.use((req, res, next) => {
-  if (req.hostname !== "nameless-wave-46063.herokuapp.com") {
+  if (req.headers.referer !== "https://nameless-wave-46063.herokuapp.com/") {
     console.log(req.socket.address().port);
     console.log(req.headers.referer);
     return res.status(403).json({
