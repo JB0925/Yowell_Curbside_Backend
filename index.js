@@ -39,9 +39,8 @@ app.use(
 );
 app.use((req, res, next) => {
   if (req.hostname !== "nameless-wave-46063.herokuapp.com") {
-    console.log(req.socket.ip);
     console.log(req.socket.address().port);
-    console.log(req.hostname);
+    console.log(req.get("host"));
     return res.status(403).json({
       message: "This content may not be accessed via this method.",
       status: 403,
