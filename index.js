@@ -39,8 +39,7 @@ app.use(
 );
 app.use((req, res, next) => {
   if (req.headers.referer !== "https://nameless-wave-46063.herokuapp.com/") {
-    console.log(req.socket.address().port);
-    console.log(req.headers.referer);
+    logger.warn(req.headers.referer);
     return res.status(403).json({
       message: "This content may not be accessed via this method.",
       status: 403,
