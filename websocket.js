@@ -43,7 +43,7 @@ function setupWebSocket(server) {
   // what to do after a connection is established
   wss.on("connection", (ctx) => {
     // handle message events
-    setInterval(ping, 30000);
+    setInterval(ping, 15000);
     ctx.on("message", async (message) => {
       try {
         // handle connection keepalive messages
