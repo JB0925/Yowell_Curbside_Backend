@@ -19,6 +19,7 @@ function setupWebSocket(server) {
 
   const ping = () => {
     wss.clients.forEach((c) => c.send("__ping__"));
+    console.log("piiiinnnggg");
     tm = setTimeout(() => {}, 5000);
   };
 
@@ -108,6 +109,7 @@ function setupWebSocket(server) {
     // handle close event
     ctx.on("close", () => {
       console.log("closed", wss.clients.size);
+      // ping();
     });
 
     // sent a message that we're good to proceed
