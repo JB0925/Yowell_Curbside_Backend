@@ -19,7 +19,6 @@ function setupWebSocket(server) {
 
   const ping = () => {
     wss.clients.forEach((c) => c.send("__ping__"));
-    console.log("piiiinnnggg");
     tm = setTimeout(() => {}, 5000);
   };
 
