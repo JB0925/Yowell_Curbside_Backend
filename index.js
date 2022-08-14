@@ -213,6 +213,19 @@ app.get("/students/studentList", async (req, res, next) => {
   }
 });
 
+app.patch("/students/updateStudent", async (req, res, next) => {
+  try {
+    await Student.getStudentData(req.body.number);
+    const { number, name } = await Student.updateStudent(
+      req.body.number,
+      req.body.name
+    );
+    return res.status(200).json({ number, name });
+  } catch (error) {
+    return next(error);
+  }
+});
+
 app.use((req, res, next) => {
   return res.status(404).json({ message: "Not Found" });
 });
