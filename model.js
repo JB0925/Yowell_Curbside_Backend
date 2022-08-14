@@ -49,6 +49,23 @@ class Student {
     return newStudentGroupings;
   }
 
+  static async getStudentData(number) {
+    number = number.toString();
+
+    const result = await db.query(
+      `SELECT number, name
+       FROM students
+       WHERE number = $1`,
+      [number]
+    );
+
+    if (!result.rows.length) {
+      throw new BadRequestError("No students match this query.");
+    }
+
+    return true;
+  }
+
   static async getStudentByNumber(number) {
     number = number.toString();
 
@@ -378,6 +395,22 @@ class Student {
 
     result.rows.sort((a, b) => parseInt(a.number) - parseInt(b.number));
     return result.rows;
+  }
+
+  static async updateStudent(studentNumber, studentName) {
+    const result = await db.query(
+      `UPDATE students
+       SET name = $1
+       WHERE number = $2
+       RETURNING number, name`,
+      [studentName, studentNumber]
+    );
+
+    if (!result.rows.length) {
+      throw new BadRequestError("No student exists with this number.");
+    }
+
+    return result.rows[0];
   }
 }
 
