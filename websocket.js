@@ -19,11 +19,6 @@ function setupWebSocket(server) {
 
   const ping = () => {
     wss.clients.forEach((c) => c.send("__ping__"));
-    tm = setTimeout(() => {}, 5000);
-  };
-
-  const pong = () => {
-    clearTimeout(tm);
   };
 
   // handle upgrade of the request
@@ -46,9 +41,9 @@ function setupWebSocket(server) {
     setInterval(ping, 15000);
     ctx.on("message", async (message) => {
       try {
-        // handle connection keepalive messages
-        if (message === "__ping__") {
-          pong();
+        // // handle connection keepalive messages
+        if (message.toString() === "__pong__") {
+          logger.info("Retaining connection to server via __pong__ request");
           return;
         }
 
@@ -108,7 +103,7 @@ function setupWebSocket(server) {
     // handle close event
     ctx.on("close", () => {
       console.log("closed", wss.clients.size);
-      // ping();
+      ping();
     });
 
     // sent a message that we're good to proceed
