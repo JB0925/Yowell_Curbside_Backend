@@ -320,6 +320,64 @@ describe("testing HTTP request to get all students in student database ordered a
   });
 });
 
+describe("testing HTTP request to update an existing student in the student database", () => {
+  it("updates a student who exists in the student database.", async () => {
+    const result = await db.query(
+      `SELECT * FROM students
+       WHERE number = $1`,
+      ["1"]
+    );
+    expect(result.rows.length).toBe(1);
+
+    const [joe] = result.rows;
+    expect(joe.name).toBe("Joe");
+
+    const body = {
+      number: joe.number,
+      name: "Joe Smith",
+    };
+    const response = await request(app)
+      .patch("/students/updateStudent")
+      .send(body);
+
+    expect(response.statusCode).toBe(200);
+    expect(response.body.number).toBe("1");
+    expect(response.body.name).toBe("Joe Smith");
+
+    const newResult = await db.query(
+      `SELECT * FROM students
+       WHERE number = $1`,
+      ["1"]
+    );
+
+    expect(newResult.rows.length).toBe(1);
+    expect(newResult.rows[0].name).toBe("Joe Smith");
+  });
+
+  it("throws an error when trying to update a student that does not exist in the database.", async () => {
+    const result = await db.query(
+      `SELECT * FROM students
+       WHERE number = $1`,
+      ["10"]
+    );
+
+    // result should be empty
+    expect(result.rows.length).toBe(0);
+
+    const body = {
+      number: "10",
+      name: "Jason",
+    };
+
+    const response = await request(app)
+      .patch("/students/updateStudent")
+      .send(body);
+
+    expect(response.statusCode).toBe(400);
+    expect(response.body.error.message).toBe("No students match this query.");
+  });
+});
+
 /** MODEL TESTING */
 describe("testing the model to remove students who have no number", () => {
   it("sets isloaded to false for a student with no number from the temporary students table", async () => {
