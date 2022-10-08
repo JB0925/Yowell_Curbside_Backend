@@ -55,6 +55,12 @@ describe("testing HTTP requests to add a student to the database", () => {
     );
   });
 
+  it("throws an error when trying to add a student whose name is already in the database", async () => {
+    const newStudent = { number: "6", name: "tim" };
+    const response = await request(app).post("/").send(newStudent);
+    expect(response.statusCode).toBe(409);
+  });
+
   it("throws an error when a name is not provided", async () => {
     const newStudent = { number: "17" };
     const response = await request(app).post("/").send(newStudent);

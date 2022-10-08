@@ -149,8 +149,9 @@ class Student {
     const duplicateCheck = await db.query(
       `SELECT number, name
        FROM students
-       WHERE number = $1`,
-      [number]
+       WHERE number = $1
+       OR LOWER(name) = $2`,
+      [number, name.toLowerCase()]
     );
 
     if (duplicateCheck.rows.length) {
