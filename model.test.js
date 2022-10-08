@@ -22,10 +22,6 @@ afterEach(async () => {
   await db.query("DELETE from temp_students");
 });
 
-afterAll(async () => {
-  await db.end();
-});
-
 describe("testing the model to remove students who have no number", () => {
   it("sets isloaded to false for a student with no number from the temporary students table", async () => {
     const result = await db.query(

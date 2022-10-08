@@ -23,10 +23,6 @@ afterEach(async () => {
   await db.query("DELETE from temp_students");
 });
 
-afterAll(async () => {
-  await db.end();
-});
-
 describe("testing HTTP requests to get a student by number", () => {
   it("gets a student's data given a number that exists in the database", async () => {
     const response = await request(app).get("/3");

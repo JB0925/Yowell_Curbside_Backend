@@ -44,7 +44,10 @@ app.use(
   })
 );
 app.use((req, res, next) => {
-  if (req.headers.referer !== "https://nameless-wave-46063.herokuapp.com/") {
+  if (
+    req.headers.referer !== "https://nameless-wave-46063.herokuapp.com/" &&
+    process.env.NODE_ENV === "production"
+  ) {
     logger.warn(req.headers.referer);
     return res.status(403).json({
       message: "This content may not be accessed via this method.",
