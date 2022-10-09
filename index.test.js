@@ -8,7 +8,7 @@ const { response } = require("express");
 beforeAll(async () => {
   await db.query(
     `CREATE TABLE IF NOT EXISTS students (
-     number PRIMARY KEY VARCHAR NOT NULL UNIQUE,
+     number VARCHAR PRIMARY KEY NOT NULL UNIQUE,
      name VARCHAR(50) NOT NULL,
      isloaded BOOLEAN DEFAULT false,
      time VARCHAR,
