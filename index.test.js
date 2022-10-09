@@ -1,6 +1,6 @@
 process.env.NODE_ENV = "test";
 const app = require("./index");
-const db = require("./db");
+const db = require("./ci_db");
 const request = require("supertest");
 const Student = require("./model");
 const { response } = require("express");

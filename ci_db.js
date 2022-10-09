@@ -3,7 +3,7 @@ const { Pool } = require("pg");
 const DB_NAME = "curbside_test";
 
 const db = new Pool({
-  connectionString: DB_NAME,
+  connectionString: "postgres",
   max: 20,
   connectionTimeoutMillis: 0,
   idleTimeoutMillis: 0,
@@ -11,7 +11,7 @@ const db = new Pool({
 
 db.connect(async (err) => {
   if (err) throw err;
-  await db.query(`CREATE DATABASE curbside_test`);
+  // await db.query(`CREATE DATABASE curbside_test`);
 
   await db.query(
     `CREATE TABLE IF NOT EXISTS students (
