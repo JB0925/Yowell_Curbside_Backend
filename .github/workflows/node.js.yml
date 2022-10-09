@@ -45,10 +45,10 @@ jobs:
         run: npm install
 
       - name: Find PostgreSQL DB
-        run: find / -name initdb
+        run: pg_createcluster 14.5 main --start
 
       - name: Actually Restart Postgres
-        run: /etc/init.d/postgresql start
+        run: /usr/lib/postgresql/14/bin/initdb start
 
       - name: setup testing database
         run: npm run setup_test_db
