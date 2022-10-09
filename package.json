@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "setup_test_db": "psql postgres && psql < ci_db_setup.sql",
-    "test": "jest -i --forceExit"
+    "setup_test_db": "psql -U postgres < ci_db_setup.sql",
+    "test": "npm run setup_test_db && jest -i --forceExit"
   },
   "keywords": [],
   "author": "",
@@ -23,5 +23,8 @@
     "websocket": "^1.0.34",
     "winston": "^3.8.1",
     "ws": "^8.5.0"
+  },
+  "devDependencies": {
+    "jest": "^29.1.2"
   }
 }
