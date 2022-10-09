@@ -4,6 +4,27 @@ const db = require("./ci_db");
 const request = require("supertest");
 const Student = require("./model");
 
+eforeAll(async () => {
+  await db.query(
+    `CREATE TABLE IF NOT EXISTS students (
+     number PRIMARY KEY VARCHAR NOT NULL UNIQUE,
+     name VARCHAR(50) NOT NULL,
+     isloaded BOOLEAN DEFAULT false,
+     time VARCHAR,
+     added BOOLEAN DEFAULT false
+    )`
+  );
+
+  await db.query(
+    `CREATE TABLE IF NOT EXISTS temp_students (
+     name VARCHAR(50) NOT NULL,
+     isloaded BOOLEAN DEFAULT false,
+     time VARCHAR,
+     added BOOLEAN DEFAULT false    
+    )`
+  );
+});
+
 beforeEach(async () => {
   await db.query(
     `INSERT INTO students
