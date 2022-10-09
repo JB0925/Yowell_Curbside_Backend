@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "setup_test_db": "psql postgres && psql < ci_db_setup.sql",
     "test": "jest -i --forceExit"
   },
   "keywords": [],
