@@ -40,7 +40,7 @@ jobs:
         run: npm install
 
       - name: setup testing database
-        run: npm setup_test_db
+        run: npm run setup_test_db
 
       - name: Run the test
         run: npm test
