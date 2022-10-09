@@ -44,6 +44,9 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Create PostgreSQL Cluster
+        run: pg_createcluster 14.5 main
+
       - name: Actually Restart Postgres
         run: /etc/init.d/postgresql start
 
