@@ -44,11 +44,8 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Restart Postgres
-        run: pg_lsclusters
-
       - name: Actually Restart Postgres
-        run: sudo service postgresql restart
+        run: /etc/init.d/postgresql restart
 
       - name: setup testing database
         run: npm run setup_test_db
