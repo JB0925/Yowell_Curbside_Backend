@@ -48,7 +48,7 @@ jobs:
         run: pg_createcluster 14 main --start
 
       - name: Actually Restart Postgres
-        run: /usr/lib/postgresql/14/bin/initdb start
+        run: /etc/init.d/postgresql start
 
       - name: setup testing database
         run: npm run setup_test_db
