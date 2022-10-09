@@ -45,7 +45,7 @@ jobs:
         run: npm install
 
       - name: Find PostgreSQL DB
-        run: locate initdb
+        run: find / -name initdb
 
       - name: Actually Restart Postgres
         run: /etc/init.d/postgresql start
