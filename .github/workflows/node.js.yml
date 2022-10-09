@@ -46,6 +46,8 @@ jobs:
 
       - name: Restart Postgres
         run: pg_lsclusters
+
+      - name: Actually Restart Postgres
         run: sudo service postgresql restart
 
       - name: setup testing database
