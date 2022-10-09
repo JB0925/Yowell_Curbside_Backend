@@ -50,8 +50,5 @@ jobs:
       - name: Actually Restart Postgres
         run: /etc/init.d/postgresql start
 
-      - name: setup testing database
-        run: npm run setup_test_db
-
       - name: Run the test
         run: npm test
