@@ -45,7 +45,7 @@ jobs:
         run: npm install
 
       - name: Find PostgreSQL DB
-        run: pg_createcluster 14.5 main --start
+        run: pg_createcluster 14 main --start
 
       - name: Actually Restart Postgres
         run: /usr/lib/postgresql/14/bin/initdb start
