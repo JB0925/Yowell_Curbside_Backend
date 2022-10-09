@@ -1,3 +1,5 @@
+require("dotenv").config();
+
 const { Pool } = require("pg");
 
 const DB_NAME = "curbside_test";
