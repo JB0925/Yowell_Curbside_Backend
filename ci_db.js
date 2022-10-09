@@ -13,29 +13,26 @@ const db = new Pool({
   idleTimeoutMillis: 0,
 });
 
-db.connect(async (err) => {
-  if (err) throw err;
-  // await db.query(`CREATE DATABASE curbside_test`);
+db.connect();
 
-  await db.query(
-    `CREATE TABLE IF NOT EXISTS students (
-     number PRIMARY KEY VARCHAR NOT NULL UNIQUE,
-     name VARCHAR(50) NOT NULL,
-     isloaded BOOLEAN DEFAULT false,
-     time VARCHAR,
-     added BOOLEAN DEFAULT false
-    )`
-  );
+db.query(
+  `CREATE TABLE IF NOT EXISTS students (
+   number PRIMARY KEY VARCHAR NOT NULL UNIQUE,
+   name VARCHAR(50) NOT NULL,
+   isloaded BOOLEAN DEFAULT false,
+   time VARCHAR,
+   added BOOLEAN DEFAULT false
+  )`
+);
 
-  await db.query(
-    `CREATE TABLE IF NOT EXISTS temp_students (
-     name VARCHAR(50) NOT NULL,
-     isloaded BOOLEAN DEFAULT false,
-     time VARCHAR,
-     added BOOLEAN DEFAULT false    
-    )`
-  );
-});
+db.query(
+  `CREATE TABLE IF NOT EXISTS temp_students (
+   name VARCHAR(50) NOT NULL,
+   isloaded BOOLEAN DEFAULT false,
+   time VARCHAR,
+   added BOOLEAN DEFAULT false    
+  )`
+);
 
 // async function setupDatabase() {
 //   await db.query("CREATE DATABASE IF NOT EXISTS curbside_test");
