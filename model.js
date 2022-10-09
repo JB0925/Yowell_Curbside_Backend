@@ -113,7 +113,7 @@ class Student {
     }
 
     let nameArray = result.rows.map((student) => student.name);
-    const x = nameArray.filter((n) =>
+    let x = nameArray.filter((n) =>
       n
         .split(" ")
         .some(
@@ -122,6 +122,7 @@ class Student {
             (b.indexOf(".") === -1 || b.length > 2)
         )
     );
+    x = Array.from(new Set(x));
     return x;
   }
 
@@ -179,6 +180,12 @@ class Student {
        WHERE isLoaded = $1`,
       [true]
     );
+
+    if (result.rows.length) {
+      result.rows = result.rows.filter((other, index, self) => {
+        return self.findIndex((v) => v.name === other.name) === index;
+      });
+    }
 
     const temp_students_result = await db.query(
       `SELECT name, time

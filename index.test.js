@@ -14,7 +14,8 @@ beforeEach(async () => {
      ('2', 'Tim'),
      ('3', 'Sarah'),
      ('4', 'Mary'),
-     ('5', 'Mark')`
+     ('5', 'Mark'),
+     ('41', 'Joe')`
   );
 });
 
@@ -311,12 +312,12 @@ describe("testing HTTP request to get all students in student database ordered a
     );
     expect(result.rows.length).toBe(5);
     const response = await request(app).get("/students/studentList");
-    expect(response.body.studentList.length).toBe(5);
+    expect(response.body.studentList.length).toBe(6);
     const [joe, tim, sarah, mary, mark] = response.body.studentList;
     const studentNumbers = response.body.studentList.map((student) =>
       parseInt(student.number)
     );
-    expect([1, 2, 3, 4, 5]).toEqual(studentNumbers);
+    expect([1, 2, 3, 4, 5, 41]).toEqual(studentNumbers);
     expect(joe.name).toBe("Joe");
     expect(mark.name).toBe("Mark");
   });
