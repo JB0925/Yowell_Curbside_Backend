@@ -5,8 +5,8 @@ const { Pool } = require("pg");
 const DB_NAME = "curbside_test";
 
 const db = new Pool({
-  host: process.env.POSTGRES_HOST,
-  port: process.env.POSTGRES_PORT,
+  host: "localhost",
+  port: 5432,
   user: "postgres",
   password: "postgres",
   database: "postgres",
