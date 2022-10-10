@@ -147,6 +147,13 @@ class Student {
       throw new BadRequestError("You must provide a name and number");
     }
 
+    const threshold = 499;
+    if (parseInt(number) > threshold) {
+      throw new BadRequestError(
+        "The number you provide must be less than 500."
+      );
+    }
+
     const duplicateCheck = await db.query(
       `SELECT number, name
        FROM students

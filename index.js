@@ -164,6 +164,14 @@ app.patch("/students/remove/:number", async (req, res, next) => {
   let updatedStudentStatus;
 
   try {
+    if (!number) {
+      const { studentToRemove } = req.body;
+      await Student.removeStudentWithNoNumber(studentToRemove);
+      return res
+        .status(200)
+        .json({ message: `Student ${studentToRemove} successfully removed` });
+    }
+
     if (number.split("+").length > 1) {
       const numbers = number.split("+");
       updatedStudentStatus = await Student.changeLoadedStatusOfMultipleToFalse(
@@ -200,6 +208,7 @@ app.post("/students/add/noNumber", async (req, res, next) => {
 app.patch("/students/remove/noNumber", async (req, res, next) => {
   try {
     const { studentToRemove } = req.body;
+    console.log(req.body);
     await Student.removeStudentWithNoNumber(studentToRemove);
     return res.status(200).json({
       message: `Student ${studentToRemove} successfully removed`,
