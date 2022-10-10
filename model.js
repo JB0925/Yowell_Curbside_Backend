@@ -290,8 +290,13 @@ class Student {
       throw new BadRequestError("No student exists with this number.");
     }
 
-    if (studentExists.rows[0].added) {
+    if (studentExists.rows.some((st) => st.added)) {
       throw new ConflictError("Student has already been added today.");
+    }
+
+    if (studentExists.rows.length > 1) {
+      const nums = studentExists.rows.map((n) => n.number);
+      await this.changeLoadedStatusOfMultipleToTrue(nums);
     }
 
     let pickupTime = new Date().toString();
@@ -319,6 +324,16 @@ class Student {
 
     if (!studentExists.rows.length) {
       throw new BadRequestError("No student exists with this number.");
+    }
+
+    if (studentExists.rows[0].name === "Justice Puller") {
+      await db.query(
+        `UPDATE students
+         SET isloaded = $1,
+         time = $2
+         WHERE number IN ($3, $4)`,
+        [false, null, "265", "160"]
+      );
     }
 
     await db.query(
