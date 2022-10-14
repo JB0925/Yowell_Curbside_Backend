@@ -148,6 +148,8 @@ class Student {
     }
 
     const threshold = 499;
+    number = number.trim();
+
     if (parseInt(number) > threshold) {
       throw new BadRequestError(
         "The number you provide must be less than 500."
@@ -159,7 +161,7 @@ class Student {
        FROM students
        WHERE number = $1
        OR LOWER(name) = $2`,
-      [number, name.toLowerCase()]
+      [number, name.toLowerCase().trim()]
     );
 
     if (duplicateCheck.rows.length) {
