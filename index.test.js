@@ -524,6 +524,39 @@ describe("testing HTTP request to update an existing student in the student data
     expect(newResult.rows[0].name).toBe("Joe Smith");
   });
 
+  it("updates a student who exists in the student database and strips any whitespace from their name.", async () => {
+    const result = await db.query(
+      `SELECT * FROM students
+       WHERE number = $1`,
+      ["1"]
+    );
+    expect(result.rows.length).toBe(1);
+
+    const [joe] = result.rows;
+    expect(joe.name).toBe("Joe");
+
+    const body = {
+      number: joe.number,
+      name: "Joe Smith  ",
+    };
+    const response = await request(app)
+      .patch("/students/updateStudent")
+      .send(body);
+
+    expect(response.statusCode).toBe(200);
+    expect(response.body.number).toBe("1");
+    expect(response.body.name).toBe("Joe Smith");
+
+    const newResult = await db.query(
+      `SELECT * FROM students
+       WHERE number = $1`,
+      ["1"]
+    );
+
+    expect(newResult.rows.length).toBe(1);
+    expect(newResult.rows[0].name).toBe("Joe Smith");
+  });
+
   it("throws an error when trying to update a student that does not exist in the database.", async () => {
     const result = await db.query(
       `SELECT * FROM students

@@ -430,6 +430,8 @@ class Student {
   }
 
   static async updateStudent(studentNumber, studentName) {
+    studentName = studentName.trim();
+    studentNumber = studentNumber.trim();
     const result = await db.query(
       `UPDATE students
        SET name = $1

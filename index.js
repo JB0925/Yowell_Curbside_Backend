@@ -224,7 +224,10 @@ app.patch("/students/remove/noNumber", async (req, res, next) => {
 
 app.get("/students/studentList", async (req, res, next) => {
   try {
-    const studentList = await Student.getAllNamesAndNumbers();
+    const studentList =
+      cache.get("studentList") || (await Student.getAllNamesAndNumbers());
+
+    cache.set("studentList", studentList);
     return res.status(200).json({ studentList });
   } catch (error) {
     return next(error);
