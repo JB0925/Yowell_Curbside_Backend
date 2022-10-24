@@ -241,6 +241,7 @@ app.patch("/students/updateStudent", async (req, res, next) => {
       req.body.number,
       req.body.name
     );
+    cache.set("studentList", await Student.getAllNamesAndNumbers());
     return res.status(200).json({ number, name });
   } catch (error) {
     return next(error);
