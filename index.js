@@ -72,6 +72,7 @@ app.post("/", async (req, res, next) => {
   try {
     const newStudent = await Student.addStudent(number, name);
     logger.info(`Adding a new student to the database: ${newStudent}`);
+    cache.set("studentList", await Student.getAllNamesAndNumbers());
     return res.status(201).json({ student: newStudent });
   } catch (error) {
     return next(error);
