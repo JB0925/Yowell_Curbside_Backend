@@ -65,6 +65,12 @@ describe("testing HTTP requests to add a student to the database", () => {
     expect(response.statusCode).toBe(201);
     expect(response.body.student.number).toBe("6");
     expect(response.body.student.name).toBe("Julio");
+
+    // Ensuring that the cache is updated and it is reflected in the main student list
+    const studentListResponse = await request(app).get("/students/studentList");
+    expect(studentListResponse.body.studentList.map((p) => p.name)).toContain(
+      "Julio"
+    );
   });
 
   it("throws an error when trying to add a student with a number that has already been used", async () => {
@@ -479,12 +485,12 @@ describe("testing HTTP request to get all students in student database ordered a
     );
     expect(result.rows.length).toBe(5);
     const response = await request(app).get("/students/studentList");
-    expect(response.body.studentList.length).toBe(6);
+    expect(response.body.studentList.length).toBeGreaterThanOrEqual(6);
     const [joe, tim, sarah, mary, mark] = response.body.studentList;
     const studentNumbers = response.body.studentList.map((student) =>
       parseInt(student.number)
     );
-    expect([1, 2, 3, 4, 5, 41]).toEqual(studentNumbers);
+    expect([1, 2, 3, 4, 5, 6, 41]).toEqual(studentNumbers);
     expect(joe.name).toBe("Joe");
     expect(mark.name).toBe("Mark");
   });
@@ -555,6 +561,12 @@ describe("testing HTTP request to update an existing student in the student data
 
     expect(newResult.rows.length).toBe(1);
     expect(newResult.rows[0].name).toBe("Joe Smith");
+
+    // Making sure that the cache has been updated and is reflected in the main student list.
+    const studentListResponse = await request(app).get("/students/studentList");
+    expect(studentListResponse.body.studentList.map((p) => p.name)).toContain(
+      "Joe Smith"
+    );
   });
 
   it("throws an error when trying to update a student that does not exist in the database.", async () => {
