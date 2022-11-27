@@ -12,4 +12,7 @@ const reset = async () => {
   await db.query(`DELETE FROM temp_students`);
 };
 
-reset();
+reset().then(() => {
+  console.log("All done!");
+  process.exit();
+});
