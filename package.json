@@ -1,6 +1,6 @@
 {
   "name": "curbside_server",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -20,6 +20,7 @@
     "lru-cache": "^7.13.1",
     "pg": "^8.7.3",
     "supertest": "^6.2.2",
+    "twilio": "^3.83.3",
     "websocket": "^1.0.34",
     "winston": "^3.8.1",
     "ws": "^8.5.0"
