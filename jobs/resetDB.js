@@ -37,6 +37,12 @@ reset()
       console.log(message.sid);
     } else {
       console.log("All done!");
+      const id = client.messages.create({
+        body: "Heroku Curbside App DB reset and ready for tomorrow!",
+        from: process.env.TWILIO_PHONE_NUMBER,
+        to: process.env.RECEIVER_PHONE_NUMBER,
+      });
+      return id;
     }
-    process.exit();
-  });
+  })
+  .then(() => process.exit());
