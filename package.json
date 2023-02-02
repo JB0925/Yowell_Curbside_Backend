@@ -1,6 +1,6 @@
 {
   "name": "curbside_server",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -15,15 +15,15 @@
     "bree": "^8.0.1",
     "compression": "^1.7.4",
     "cors": "^2.8.5",
-    "dotenv": "^16.0.0",
-    "express": "^4.17.2",
-    "lru-cache": "^7.13.1",
-    "pg": "^8.7.3",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "lru-cache": "^7.14.1",
+    "pg": "^8.9.0",
     "supertest": "^6.2.2",
-    "twilio": "^3.83.3",
+    "twilio": "^3.84.1",
     "websocket": "^1.0.34",
     "winston": "^3.8.1",
-    "ws": "^8.5.0"
+    "ws": "^8.12.0"
   },
   "devDependencies": {
     "jest": "^29.1.2"
