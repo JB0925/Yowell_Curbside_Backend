@@ -94,10 +94,10 @@ class Student {
   static async getMultipleStudentsByNumber(numbers) {
     let student = "";
     for (let number of numbers) {
-      student += await this.getStudentByNumber(number);
+      student = student + ", " + (await this.getStudentByNumber(number));
     }
 
-    return student;
+    return student.trim(" ").substring(2);
   }
 
   static async getStudentsByPartiallyMatchedName(partialName) {
