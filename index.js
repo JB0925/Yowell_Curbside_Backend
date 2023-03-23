@@ -7,6 +7,7 @@ const Graceful = require("@ladjs/graceful");
 const LRU = require("lru-cache");
 const logger = require("./logger");
 const compression = require("compression");
+const helmet = require("helmet");
 const {
   studentNameIsPresent,
   moreThanOneStudentIsPresentToBeAdded,
@@ -38,24 +39,25 @@ app.use(
   })
 );
 app.use(express.json());
+app.use(helmet());
 app.use(
   cors({
     origin: "*",
   })
 );
-app.use((req, res, next) => {
-  if (
-    req.headers.referer !== "https://nameless-wave-46063.herokuapp.com/" &&
-    process.env.NODE_ENV === "production"
-  ) {
-    logger.warn(req.headers.referer);
-    return res.status(403).json({
-      message: "This content may not be accessed via this method.",
-      status: 403,
-    });
-  }
-  next();
-});
+// app.use((req, res, next) => {
+//   if (
+//     req.headers.referer !== "https://nameless-wave-46063.herokuapp.com/" &&
+//     process.env.NODE_ENV === "production"
+//   ) {
+//     logger.warn(req.headers.referer);
+//     return res.status(403).json({
+//       message: "This content may not be accessed via this method.",
+//       status: 403,
+//     });
+//   }
+//   next();
+// });
 
 app.get("/:number", async (req, res, next) => {
   const { number } = req.params;
