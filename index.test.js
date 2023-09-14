@@ -163,14 +163,15 @@ describe("testing HTTP request to get all students who have been loaded", () => 
     );
 
     const response = await request(app).get("/students/status");
+    console.log(response.body.loadedStudents[0]);
     expect(response.statusCode).toBe(200);
     expect(response.body.loadedStudents.length).toBe(2);
     expect(response.body.loadedStudents[1]).toContain("3");
-    expect(response.body.loadedStudents[0][0].info).toEqual(
-      "#1: Joe  #3: Sarah"
+    expect(response.body.loadedStudents[0][1].info).toEqual(
+      "#1: Joe, #3: Sarah"
     );
-    expect(response.body.loadedStudents[1].length).toBe(2);
-    expect(response.body.loadedStudents[0][1].info).toContain("Arthur");
+    expect(response.body.loadedStudents[1].length).toBe(3);
+    expect(response.body.loadedStudents[0][0].info).toContain("Arthur");
   });
 });
 

@@ -184,70 +184,47 @@ class Student {
     // Get all students in the queue from both the regular
     // database and the temporary, "just for today" database.
     const result = await db.query(
-      `SELECT number, name, time
-       FROM students
-       WHERE isLoaded = $1`,
+      `WITH students_cte AS (
+          SELECT "time",
+          STRING_AGG('#' || "number" || ': ' || "name", ', ') AS info
+          FROM students
+          WHERE isloaded = $1
+          GROUP BY "time"
+          ORDER BY "time"
+    ),
+
+      temp_students_cte AS (
+          SELECT "time",
+          STRING_AGG('#' || floor(random() * (999-500+1) + 500)::int || ': ' || "name", ', ') AS info
+          FROM temp_students
+          WHERE isloaded = $1
+          GROUP BY "time"
+          ORDER BY "time"
+      )
+
+      SELECT * FROM students_cte
+      UNION ALL
+      SELECT * FROM temp_students_cte
+      ORDER BY "time"`,
       [true]
     );
 
-    if (result.rows.length) {
-      result.rows = result.rows.filter((other, index, self) => {
-        return self.findIndex((v) => v.name === other.name) === index;
-      });
-    }
-
-    const temp_students_result = await db.query(
-      `SELECT name, time
-       FROM temp_students
-       WHERE isloaded = $1`,
-      [true]
-    );
-
-    // If there aren't any students loaded from
-    // either the regular DB or the one for students
-    // for the day, return an empty array.
     if (!result.rows.length) {
-      if (!temp_students_result.rows.length) {
-        return [];
-      }
+      return [];
     }
-
-    // If there are students in the queue from the temp DB,
-    // assign them a random number between 500 - 999. This number
-    // does not matter and is only used on the frontend so that a separate
-    // case is not created when trying to remove students. The number can
-    // and will change, and that is ok.
-    if (temp_students_result.rows) {
-      const randomNum = (min, max) =>
-        Math.floor(Math.random() * (max - min)) + min;
-      temp_students_result.rows.forEach(
-        (t) => (t.number = randomNum(500, 1000))
-      );
-    }
-    const newArr = result.rows.concat(temp_students_result.rows);
-
-    // Merge the two arrays together, making sure to add the info
-    // for those students in the temp DB as well.
-    let combinedNamesArray = newArr.map(({ number, name, time }) => ({
-      info: `#${number}: ${name}`,
-      time,
-    }));
-
-    // Take all students who are currently loaded in the queue and place
-    // them with the other students they are supposed to go with, if any
-    // at all. Finally, sort each of those groups by the time they were
-    // entered into the system.
-    combinedNamesArray = this.combineNames(combinedNamesArray).filter(
-      (n) => n.info !== undefined && n.time !== undefined
-    );
-    combinedNamesArray.sort((a, b) => parseInt(a.time) - parseInt(b.time));
 
     // We return all of the used numbers, too, so that on the client side,
     // they can return early if a number has been entered that has already
     // been used for the day.
-    const numberArray = result.rows.map(({ number }) => number);
+    let numberArray = [];
+    for (let st of result.rows) {
+      const matches = st.info.match(/\d+(\.\d+)?/g);
+      for (let match of matches) {
+        numberArray.push(match);
+      }
+    }
 
-    return [combinedNamesArray, numberArray];
+    return [result.rows, numberArray];
   }
 
   static async changeLoadedStatusOfMultipleToTrue(numbers) {
@@ -384,6 +361,10 @@ class Student {
   }
 
   static async removeStudentWithNoNumber(name) {
+    if (name.includes("#")) {
+      name = name.split(":")[1].trim("");
+    }
+
     const studentExists = await db.query(
       `SELECT *
        FROM temp_students

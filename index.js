@@ -45,19 +45,19 @@ app.use(
     origin: "*",
   })
 );
-app.use((req, res, next) => {
-  if (
-    req.headers.referer !== "https://nameless-wave-46063.herokuapp.com/" &&
-    process.env.NODE_ENV === "production"
-  ) {
-    logger.warn(req.headers.referer);
-    return res.status(403).json({
-      message: "This content may not be accessed via this method.",
-      status: 403,
-    });
-  }
-  next();
-});
+// app.use((req, res, next) => {
+//   if (
+//     req.headers.referer !== "https://nameless-wave-46063.herokuapp.com/" &&
+//     process.env.NODE_ENV === "production"
+//   ) {
+//     logger.warn(req.headers.referer);
+//     return res.status(403).json({
+//       message: "This content may not be accessed via this method.",
+//       status: 403,
+//     });
+//   }
+//   next();
+// });
 
 app.get("/:number", async (req, res, next) => {
   const { number } = req.params;
