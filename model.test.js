@@ -68,6 +68,82 @@ describe("testing the model to remove students who have no number", () => {
   });
 });
 
+describe("testing the model to remove students who have no number, but have a temp number before their name", () => {
+  it("sets isloaded to false for a student with a temp number from the temporary students table", async () => {
+    const result = await db.query(
+      `INSERT INTO temp_students
+       (name, time, isloaded)
+       VALUES
+       ($1, $2, $3)
+       RETURNING name, time, isloaded`,
+      ["jason", "167856788655", true]
+    );
+
+    await Student.removeStudentWithNoNumber("#522: jason");
+    const newResult = await db.query(
+      `SELECT *
+       FROM temp_students
+       WHERE name = $1`,
+      ["jason"]
+    );
+
+    expect(newResult.rows[0].added).toBe(true);
+    expect(newResult.rows[0].time).toBeNull();
+    expect(newResult.rows[0].isloaded).toBe(false);
+  });
+});
+
+describe("testing the model to remove a student that accidentally has two numbers", () => {
+  it("sets isloaded to false for a student with two numbers", async () => {
+    const result = await db.query(
+      `INSERT INTO students
+       (number, name, time, isloaded)
+       VALUES
+       ($1, $2, $3, $4)
+       RETURNING name, time, isloaded`,
+      ["265", "Justice Puller", "167856788655", true]
+    );
+
+    const result2 = await db.query(
+      `INSERT INTO students
+       (number, name, time, isloaded)
+       VALUES
+       ($1, $2, $3, $4)
+       RETURNING name, time, isloaded`,
+      ["160", "Justice Puller", "167856788656", true]
+    );
+
+    await Student.changeLoadedStatusToFalse("265");
+    const newResult = await db.query(
+      `SELECT *
+       FROM students
+       WHERE name = $1`,
+      ["Justice Puller"]
+    );
+
+    expect(newResult.rows.length).toBe(2);
+    expect(newResult.rows[0].time).toBeNull();
+    expect(newResult.rows[0].isloaded).toBe(false);
+    expect(newResult.rows[1].time).toBeNull();
+    expect(newResult.rows[1].isloaded).toBe(false);
+  });
+});
+
+describe("testing combining names", () => {
+  it("combines names when there are two students being picked up at the same time", async () => {
+    arr = [
+      { info: "#1: xyz", time: "167856788654" },
+      { info: "#2: abc", time: "167856788654" },
+      { info: "#3: def", time: "167856788655" },
+    ];
+
+    const result = Student.combineNames(arr);
+    console.log("RESLT", result);
+    expect(result[0].info).toBe("#1: xyz  #2: abc");
+    expect(result[2].info).toBe("#3: def");
+  });
+});
+
 describe("testing the model to get a student's number using their name as a lookup", () => {
   it("returns a student's number given a name that is in the database", async () => {
     const result = await Student.getStudentByName("Joe");
