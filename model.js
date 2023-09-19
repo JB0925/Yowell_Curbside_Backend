@@ -49,6 +49,74 @@ class Student {
     return newStudentGroupings;
   }
 
+  static async getAllStudentsForCache() {
+    try {
+      // Get all students from the database
+      const query = await db.query(
+        `SELECT number, name, added
+         FROM students`
+      );
+
+      // Store them in an object for fast lookup, to be placed
+      // in the cache.
+      let all = {};
+      for (let student of query.rows) {
+        all[student.number] = student;
+      }
+
+      return all;
+    } catch (err) {
+      logger.error(
+        "Student::getAllStudentsForCache - error in getting students for cache",
+        err
+      );
+      return {};
+    }
+  }
+
+  static async getSingleStudent(number, cache) {
+    // Try to get the student from the cache first
+    // if it's not there, then query the database.
+    const result =
+      cache.get("allStudents")?.[number] ||
+      (await db.query(
+        `SELECT number, name, added
+         FROM students
+         WHERE number = $1`,
+        [number.toString()]
+      ));
+
+    logger.debug("RESULT::getSingleStudent", result);
+
+    // If the result is undefined, then the student doesn't exist.
+    if (!result) {
+      logger.info(
+        `Student::getSingleStudent - no result from cache or db for ${number}. Result: `,
+        result
+      );
+      return null;
+    }
+
+    // A result from the database will have a rows property,
+    // which is an array of objects. If the result is from the cache,
+    // it will not have a rows property and we can just return it.
+    if (!result.hasOwnProperty("rows")) {
+      logger.info("Student::getSingleStudent - result from cache: ", result);
+      return result;
+    } else {
+      if (!result.rows.length) {
+        logger.info(
+          "Student::getSingleStudent - found no matches in cache and no results in db: ",
+          result.rows
+        );
+        return null;
+      }
+    }
+
+    logger.info("Student::getSingleStudent - result from db: ", result.rows[0]);
+    return result.rows[0].added ? "Student not found" : result.rows[0];
+  }
+
   static async getStudentData(number) {
     number = number.toString();
 
@@ -66,35 +134,38 @@ class Student {
     return true;
   }
 
-  static async getStudentByNumber(number) {
-    number = number.toString();
-
-    const result = await db.query(
-      `SELECT number, name, added
-       FROM students
-       WHERE number = $1`,
-      [number]
-    );
-
-    if (!result.rows.length || result.rows[0].added) {
+  static async getStudentByNumber(number, cache) {
+    // const result = await db.query(
+    //   `SELECT number, name, added
+    //    FROM students
+    //    WHERE number = $1`,
+    //   [number]
+    // );
+    const result = await this.getSingleStudent(number.toString(), cache);
+    logger.debug("RESULT::getStudentByNumber - result of lookup: ", result);
+    if (!result || result.added) {
       return "Student not found";
     }
+
+    // if (!result.rows.length || result.rows[0].added) {
+    //   return "Student not found";
+    // }
 
     await db.query(
       `UPDATE students
        SET added = $1
        WHERE number = $2`,
-      [true, number]
+      [true, result.number]
     );
 
-    const { name } = result.rows[0];
-    return `#${number}: ${name}`;
+    // const { name } = result.rows[0];
+    return `#${result.number}: ${result.name}`;
   }
 
-  static async getMultipleStudentsByNumber(numbers) {
+  static async getMultipleStudentsByNumber(numbers, cache) {
     let student = "";
     for (let number of numbers) {
-      student = student + ", " + (await this.getStudentByNumber(number));
+      student = student + ", " + (await this.getStudentByNumber(number, cache));
     }
 
     return student.trim(" ").substring(2);
@@ -113,12 +184,13 @@ class Student {
     }
 
     let nameArray = result.rows.map((student) => student.name);
+    const lowercasePartialName = partialName.toLowerCase();
     let x = nameArray.filter((n) =>
       n
         .split(" ")
         .some(
           (b) =>
-            b.toLowerCase().startsWith(partialName.toLowerCase()) &&
+            b.toLowerCase().startsWith(lowercasePartialName) &&
             (b.indexOf(".") === -1 || b.length > 2)
         )
     );

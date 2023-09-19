@@ -17,6 +17,8 @@ const cache = new LRU({
   max: 20,
 });
 
+app.cache = cache;
+
 const bree = new Bree({
   jobs: [
     {
@@ -62,7 +64,7 @@ app.use((req, res, next) => {
 app.get("/:number", async (req, res, next) => {
   const { number } = req.params;
   try {
-    const studentName = await Student.getStudentByNumber(number);
+    const studentName = await Student.getStudentByNumber(number, app.cache);
     return res.status(200).json({ name: studentName });
   } catch (error) {
     return next(error);
@@ -75,6 +77,7 @@ app.post("/", async (req, res, next) => {
     const newStudent = await Student.addStudent(number, name);
     logger.info(`Adding a new student to the database: ${newStudent}`);
     cache.set("studentList", await Student.getAllNamesAndNumbers());
+    cache.set("allStudents", await Student.getAllStudentsForCache());
     return res.status(201).json({ student: newStudent });
   } catch (error) {
     return next(error);
@@ -245,6 +248,7 @@ app.patch("/students/updateStudent", async (req, res, next) => {
       req.body.name
     );
     cache.set("studentList", await Student.getAllNamesAndNumbers());
+    cache.set("allStudents", await Student.getAllStudentsForCache());
     return res.status(200).json({ number, name });
   } catch (error) {
     return next(error);

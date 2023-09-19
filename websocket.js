@@ -71,18 +71,20 @@ function setupWebSocket(server) {
 
         // strip off any potential leading plus signs
         number = getNumberFromNumberString(number);
-
         // if there is more than one student number in the number
         // string, split it and get students for all numbers present
         // otherwise, just get the one student's number
         let newStudent = "";
         if (moreThanOneStudentInData(number)) {
           const numbers = number.split("+");
-          newStudent = await Student.getMultipleStudentsByNumber(numbers);
+          newStudent = await Student.getMultipleStudentsByNumber(
+            numbers,
+            app.cache
+          );
         } else {
-          newStudent = await Student.getStudentByNumber(number);
+          newStudent = await Student.getStudentByNumber(number, app.cache);
         }
-        logger.info(newStudent);
+        logger.info("websocket::newStudent - result: ", newStudent);
 
         // In this case, "student not found" could be a number
         // that doesn't exist, or a number that has already been used
@@ -101,7 +103,9 @@ function setupWebSocket(server) {
 
     // handle close event
     ctx.on("close", () => {
-      console.log("closed", wss.clients.size);
+      console.log(
+        `websocket:: onClose - attempting to reconnect to ${wss.clients.size} clients`
+      );
       ping();
     });
 
@@ -116,5 +120,8 @@ const server = http.createServer(app);
 // the websocket server will the run on the same port
 // accepting ws:// connections
 const PORT = +process.env.PORT || 3001;
-server.listen(PORT);
+server.listen(PORT, async () => {
+  const allStudents = await Student.getAllStudentsForCache();
+  app.cache.set("allStudents", allStudents);
+});
 setupWebSocket(server);

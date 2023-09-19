@@ -1,11 +1,11 @@
 {
   "name": "curbside_server",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "",
   "main": "index.js",
   "scripts": {
     "setup_test_db": "psql --host=postgres --dbname=postgres --username=postgres < ci_db_setup.sql",
-    "test": "jest -i --forceExit"
+    "test": "jest -i --forceExit --coverage"
   },
   "keywords": [],
   "author": "",

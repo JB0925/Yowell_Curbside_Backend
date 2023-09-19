@@ -3,6 +3,11 @@ const app = require("./index");
 const db = require("./db");
 const request = require("supertest");
 const Student = require("./model");
+const LRU = require("lru-cache");
+const cache = new LRU({
+  max: 20,
+});
+cache.set("allStudents", {});
 
 beforeAll(async () => {
   await db.query(
@@ -162,7 +167,10 @@ describe("testing the model to get a student's number using their name as a look
 describe("testing that when multiple students are added together, a space is inserted between them.", () => {
   it("puts a space between names when multiple students are added", async () => {
     const numbers = ["1", "2", "3"];
-    const studentName = await Student.getMultipleStudentsByNumber(numbers);
+    const studentName = await Student.getMultipleStudentsByNumber(
+      numbers,
+      cache
+    );
     expect(studentName).toBe("#1: Joe, #2: Tim, #3: Sarah");
   });
 });

@@ -3,6 +3,12 @@ const app = require("./index");
 const db = require("./db");
 const request = require("supertest");
 const Student = require("./model");
+const LRU = require("lru-cache");
+const cache = new LRU({
+  max: 20,
+});
+app.cache = cache;
+app.cache.set("allStudents", {});
 
 beforeAll(async () => {
   await db.query(
@@ -437,7 +443,7 @@ describe("testing HTTP routes to remove students", () => {
 describe("testing the 'getMultipleStudentsByNumber' function", () => {
   it("gets multiple students by number", async () => {
     const numbers = "2+5+1";
-    const result = await Student.getMultipleStudentsByNumber(numbers);
+    const result = await Student.getMultipleStudentsByNumber(numbers, cache);
     expect(result).toContain("#2: Tim");
   });
 });
