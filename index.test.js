@@ -675,7 +675,7 @@ describe("testing that the model to add a student by number throws an error if t
     try {
       await Student.changeLoadedStatusToTrue("1");
     } catch (error) {
-      expect(error.message).toBe("Student has already been added today.");
+      expect(error.message).toBe("Student Joe has already been added today.");
     }
   });
 });

@@ -163,12 +163,16 @@ class Student {
   }
 
   static async getMultipleStudentsByNumber(numbers, cache) {
-    let student = "";
+    // let student = "";
+    // for (let number of numbers) {
+    //   student = student + ", " + (await this.getStudentByNumber(number, cache));
+    // }
+    let studentArray = [];
     for (let number of numbers) {
-      student = student + ", " + (await this.getStudentByNumber(number, cache));
+      studentArray.push(await this.getStudentByNumber(number, cache));
     }
 
-    return student.trim(" ").substring(2);
+    return studentArray.join(", ").trim(" ");
   }
 
   static async getStudentsByPartiallyMatchedName(partialName) {
@@ -342,7 +346,9 @@ class Student {
     }
 
     if (studentExists.rows.some((st) => st.added)) {
-      throw new ConflictError("Student has already been added today.");
+      throw new ConflictError(
+        `Student ${studentExists.rows[0].name} has already been added today.`
+      );
     }
 
     if (studentExists.rows.length > 1) {
@@ -460,7 +466,7 @@ class Student {
     return;
   }
 
-  static async resetAll() {
+  static async resetAll(cache) {
     await db.query(
       `UPDATE students
        SET isloaded = $1,
@@ -470,6 +476,8 @@ class Student {
     );
 
     await db.query("DELETE FROM temp_students");
+
+    cache.set("allStudents", await this.getAllStudentsForCache());
   }
 
   static async getAllNamesAndNumbers() {

@@ -126,7 +126,7 @@ app.get("/students/fullName/:name", async (req, res, next) => {
 
 app.get("/students/resetAll", async (req, res, next) => {
   try {
-    await Student.resetAll();
+    await Student.resetAll(app.cache);
     return res.status(200).json({ message: "All students have been reset." });
   } catch (error) {
     logger.error(

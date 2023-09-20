@@ -1,4 +1,5 @@
 const db = require("../db");
+const axios = require("axios");
 require("dotenv").config();
 
 const accountSid = process.env.TWILIO_ACCOUNT_SID;
@@ -15,6 +16,17 @@ const reset = async () => {
   );
 
   await db.query(`DELETE FROM temp_students`);
+
+  try {
+    let res = await axios.get(
+      "https://yowell-curbside.herokuapp.com/students/resetAll"
+    );
+    if (res.status !== 200) {
+      throw new Error("Error resetting DB and Cache");
+    }
+  } catch (err) {
+    console.error(err);
+  }
 };
 
 reset()
