@@ -1,5 +1,4 @@
 const db = require("../db");
-const axios = require("axios");
 require("dotenv").config();
 
 const accountSid = process.env.TWILIO_ACCOUNT_SID;
@@ -16,16 +15,6 @@ const reset = async () => {
   );
 
   await db.query(`DELETE FROM temp_students`);
-
-  try {
-    const port = +process.env.PORT || 3001;
-    let res = await axios.get(`http://localhost:${port}/students/resetAll`);
-    if (res.status !== 200) {
-      throw new Error("Error resetting DB and Cache");
-    }
-  } catch (err) {
-    console.error(err);
-  }
 };
 
 reset()
