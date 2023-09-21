@@ -18,9 +18,8 @@ const reset = async () => {
   await db.query(`DELETE FROM temp_students`);
 
   try {
-    let res = await axios.get(
-      "https://yowell-curbside.herokuapp.com/students/resetAll"
-    );
+    const port = +process.env.PORT || 3001;
+    let res = await axios.get(`http://localhost:${port}/students/resetAll`);
     if (res.status !== 200) {
       throw new Error("Error resetting DB and Cache");
     }

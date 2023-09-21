@@ -18,12 +18,12 @@ const cache = new LRU({
 });
 
 app.cache = cache;
-
+// cron: "0 17 * * 1-5"
 const bree = new Bree({
   jobs: [
     {
       name: "resetDB",
-      cron: "0 17 * * 1-5",
+      cron: "* * * * *",
       cronValidate: {
         useBlankDay: true,
       },
@@ -48,10 +48,18 @@ app.use(
   })
 );
 app.use((req, res, next) => {
+  allowedAddresses = new Set([
+    "https://nameless-wave-46063.herokuapp.com/",
+    "http://localhost:3001/",
+    "https://localhost:3001/",
+  ]);
+  allowedIps = new Set(["::1", "127.0.0.1"]);
   if (
-    req.headers.referer !== "https://nameless-wave-46063.herokuapp.com/" &&
+    (!allowedAddresses.has(req.headers.referer) ||
+      req.socket.remoteAddress.includes("::1")) &&
     process.env.NODE_ENV === "production"
   ) {
+    console.log("REMOTE ADDRESS", req.socket.remoteAddress);
     logger.warn(req.headers.referer);
     return res.status(403).json({
       message: "This content may not be accessed via this method.",
