@@ -26,14 +26,6 @@ const bree = new Bree({
       cronValidate: {
         useBlankDay: true,
       },
-      worker: {
-        // This function will be executed inline, no need for a separate worker file
-        task: async function () {
-          console.log("Resetting the cache");
-          await Student.resetAll(app.cache);
-          console.log(app.cache.get("allStudents"));
-        },
-      },
     },
   ],
 });

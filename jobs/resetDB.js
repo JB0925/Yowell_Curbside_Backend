@@ -1,4 +1,6 @@
 const db = require("../db");
+const app = require("../index");
+const Student = require("../model");
 require("dotenv").config();
 
 const accountSid = process.env.TWILIO_ACCOUNT_SID;
@@ -15,6 +17,10 @@ const reset = async () => {
   );
 
   await db.query(`DELETE FROM temp_students`);
+
+  const allStudents = await Student.getAllStudentsForCache();
+  app.cache.set("allStudents", allStudents);
+  console.log("allStudents: ", allStudents);
 };
 
 reset()
