@@ -48,18 +48,32 @@ app.use(
   })
 );
 app.use((req, res, next) => {
-  allowedAddresses = new Set([
-    "https://nameless-wave-46063.herokuapp.com/",
-    "http://localhost:3001/",
-    "https://localhost:3001/",
+  // allowedAddresses = new Set([
+  //   "https://nameless-wave-46063.herokuapp.com/",
+  //   "http://localhost:3001/",
+  //   "https://localhost:3001/",
+  // ]);
+
+  // if (
+  //   (!allowedAddresses.has(req.headers.referer) ||
+  //     !req.socket.remoteAddress.includes("::ffff")) &&
+  //   process.env.NODE_ENV === "production"
+  // ) {
+  //   console.log("REMOTE ADDRESS", req.socket.remoteAddress);
+  const allowedAddresses = new Set([
+    "nameless-wave-46063.herokuapp.com",
+    "localhost:3001",
   ]);
 
+  const refererHost = new URL(req.headers.referer || "").host;
+  const isLocalhost = ["::1", "::ffff:127.0.0.1"].includes(
+    req.socket.remoteAddress
+  );
+
   if (
-    (!allowedAddresses.has(req.headers.referer) ||
-      !req.socket.remoteAddress.includes("::ffff")) &&
+    (!allowedAddresses.has(refererHost) || !isLocalhost) &&
     process.env.NODE_ENV === "production"
   ) {
-    console.log("REMOTE ADDRESS", req.socket.remoteAddress);
     logger.warn(req.headers.referer);
     return res.status(403).json({
       message: "This content may not be accessed via this method.",
@@ -68,6 +82,12 @@ app.use((req, res, next) => {
   }
   next();
 });
+
+// logger.warn(req.headers.referer);
+// return res.status(403).json({
+//   message: "This content may not be accessed via this method.",
+//   status: 403,
+// });
 
 app.get("/:number", async (req, res, next) => {
   const { number } = req.params;
