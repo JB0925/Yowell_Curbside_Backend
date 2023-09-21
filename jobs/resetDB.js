@@ -1,5 +1,6 @@
 const db = require("../db");
 const app = require("../index");
+const logger = require("./logger");
 const Student = require("../model");
 require("dotenv").config();
 
@@ -20,7 +21,7 @@ const reset = async () => {
 
   const allStudents = await Student.getAllStudentsForCache();
   app.cache.set("allStudents", allStudents);
-  console.log("allStudents: ", allStudents);
+  logger.info("allStudents: ", allStudents);
 };
 
 reset()
