@@ -56,7 +56,7 @@ app.use((req, res, next) => {
   allowedIps = new Set(["::1", "127.0.0.1"]);
   if (
     (!allowedAddresses.has(req.headers.referer) ||
-      req.socket.remoteAddress.includes("::1")) &&
+      req.socket.remoteAddress.includes("::ffff")) &&
     process.env.NODE_ENV === "production"
   ) {
     console.log("REMOTE ADDRESS", req.socket.remoteAddress);
