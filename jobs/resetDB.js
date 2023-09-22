@@ -1,6 +1,6 @@
 const db = require("../db");
 const app = require("../index");
-const logger = require("./logger");
+const logger = require("../logger");
 const Student = require("../model");
 require("dotenv").config();
 
