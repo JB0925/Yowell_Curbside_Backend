@@ -38,7 +38,7 @@ function setupWebSocket(server) {
   // what to do after a connection is established
   wss.on("connection", (ctx) => {
     // handle message events
-    setInterval(ping, 15000);
+    setInterval(ping, 30000);
     ctx.on("message", async (message) => {
       try {
         // // handle connection keepalive messages
@@ -107,11 +107,7 @@ function setupWebSocket(server) {
       console.log(
         `websocket:: onClose - attempting to reconnect to ${wss.clients.size} clients`
       );
-      // ping();
     });
-
-    // sent a message that we're good to proceed
-    // ctx.send("connection established.");
   });
 }
 
