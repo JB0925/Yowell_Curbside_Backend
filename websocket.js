@@ -44,7 +44,6 @@ function setupWebSocket(server) {
         // // handle connection keepalive messages
         if (message.toString() === "__pong__") {
           logger.info("Retaining connection to server via __pong__ request");
-          return;
         }
 
         const newMessage = JSON.parse(message).split("_");
@@ -107,7 +106,7 @@ function setupWebSocket(server) {
       console.log(
         `websocket:: onClose - attempting to reconnect to ${wss.clients.size} clients`
       );
-      // ping();
+      ping();
     });
 
     // sent a message that we're good to proceed
