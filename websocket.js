@@ -43,7 +43,7 @@ function setupWebSocket(server) {
       try {
         // // handle connection keepalive messages
         if (message.toString() === "__pong__") {
-          logger.debug("Retaining connection to server via __pong__ request");
+          logger.info("Retaining connection to server via __pong__ request");
           return;
         }
 
