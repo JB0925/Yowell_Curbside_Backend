@@ -259,6 +259,31 @@ class Student {
   static async getLoadedStudents() {
     // Get all students in the queue from both the regular
     // database and the temporary, "just for today" database.
+    // const result = await db.query(
+    //   `WITH students_cte AS (
+    //       SELECT "time",
+    //       STRING_AGG('#' || "number" || ': ' || "name", ', ') AS info
+    //       FROM students
+    //       WHERE isloaded = $1
+    //       GROUP BY "time"
+    //       ORDER BY "time"
+    // ),
+
+    //   temp_students_cte AS (
+    //       SELECT "time",
+    //       STRING_AGG('#' || floor(random() * (999-500+1) + 500)::int || ': ' || "name", ', ') AS info
+    //       FROM temp_students
+    //       WHERE isloaded = $1
+    //       GROUP BY "time"
+    //       ORDER BY "time"
+    //   )
+
+    //   SELECT * FROM students_cte
+    //   UNION ALL
+    //   SELECT * FROM temp_students_cte
+    //   ORDER BY "time"`,
+    //   [true]
+    // );
     const result = await db.query(
       `WITH students_cte AS (
           SELECT "time",
@@ -271,7 +296,7 @@ class Student {
 
       temp_students_cte AS (
           SELECT "time",
-          STRING_AGG('#' || floor(random() * (999-500+1) + 500)::int || ': ' || "name", ', ') AS info
+          STRING_AGG('#' || "number" || ': ' || "name", ', ') AS info
           FROM temp_students
           WHERE isloaded = $1
           GROUP BY "time"
@@ -415,7 +440,7 @@ class Student {
       `SELECT isloaded, added
        FROM temp_students
        WHERE name = $1`,
-      [name]
+      [name.split(": ")[1]]
     );
 
     if (checkForStudent.rows.length) {
@@ -426,13 +451,17 @@ class Student {
     let pickupTime = new Date().toString();
     pickupTime = Date.parse(pickupTime);
 
+    // const number = Math.floor(Math.random() * (999 - 500 + 1) + 500);
+    const number = name.split(": ")[0].split("#")[1].trim("");
+    const newName = name.split(": ")[1].trim("");
+
     const result = await db.query(
       `INSERT INTO temp_students
-       (name, isloaded, time)
+       (name, number, isloaded, time)
        VALUES
-       ($1, $2, $3)
+       ($1, $2, $3, $4)
        RETURNING name, time`,
-      [name, true, pickupTime]
+      [newName, number, true, pickupTime]
     );
 
     return result.rows[0];

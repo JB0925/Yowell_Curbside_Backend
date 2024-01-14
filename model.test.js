@@ -52,11 +52,11 @@ describe("testing the model to remove students who have no number", () => {
   it("sets isloaded to false for a student with no number from the temporary students table", async () => {
     const result = await db.query(
       `INSERT INTO temp_students
-       (name, time, isloaded)
+       (name, number, time, isloaded)
        VALUES
-       ($1, $2, $3)
+       ($1, $2, $3, $4)
        RETURNING name, time, isloaded`,
-      ["joe", "167856788654", true]
+      ["joe", "627", "167856788654", true]
     );
 
     await Student.removeStudentWithNoNumber("joe");
@@ -77,11 +77,11 @@ describe("testing the model to remove students who have no number, but have a te
   it("sets isloaded to false for a student with a temp number from the temporary students table", async () => {
     const result = await db.query(
       `INSERT INTO temp_students
-       (name, time, isloaded)
+       (name, number, time, isloaded)
        VALUES
-       ($1, $2, $3)
+       ($1, $2, $3, $4)
        RETURNING name, time, isloaded`,
-      ["jason", "167856788655", true]
+      ["jason", "789", "167856788655", true]
     );
 
     await Student.removeStudentWithNoNumber("#522: jason");
@@ -143,7 +143,7 @@ describe("testing combining names", () => {
     ];
 
     const result = Student.combineNames(arr);
-    console.log("RESLT", result);
+    console.log("RESULT", result);
     expect(result[0].info).toBe("#1: xyz  #2: abc");
     expect(result[2].info).toBe("#3: def");
   });

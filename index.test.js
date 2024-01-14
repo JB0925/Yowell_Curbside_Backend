@@ -162,10 +162,10 @@ describe("testing HTTP request to get all students who have been loaded", () => 
 
     await db.query(
       `INSERT INTO temp_students
-       (name, isloaded, time)
+       (name, number, isloaded, time)
        VALUES
-       ($1, $2, $3)`,
-      ["Arthur", true, "156785456744"]
+       ($1, $2, $3, $4)`,
+      ["Arthur", "519", true, "156785456744"]
     );
 
     const response = await request(app).get("/students/status");
@@ -265,10 +265,10 @@ describe("testing HTTP route to reset all students in the database to their orig
 
     await db.query(
       `INSERT INTO temp_students
-       (name, time, added)
+       (name, number, time, added)
        VALUES
-       ($1, $2, $3)`,
-      ["Beebo", "123456789", true]
+       ($1, $2, $3, $4)`,
+      ["Beebo", "987", "123456789", true]
     );
 
     const firstResponse = await request(app).get("/students/status");
@@ -415,10 +415,10 @@ describe("testing HTTP routes to remove students", () => {
   it("removes students who are added but are not in the main list/database.", async () => {
     const result = await db.query(
       `INSERT INTO temp_students
-       (name, isloaded, time)
+       (name, number, isloaded, time)
        VALUES
-       ($1, $2, $3)`,
-      ["Arthur", true, "156785456744"]
+       ($1, $2, $3, $4)`,
+      ["Arthur", "567", true, "156785456744"]
     );
 
     const response = await request(app).get("/students/status");
@@ -450,7 +450,7 @@ describe("testing the 'getMultipleStudentsByNumber' function", () => {
 
 describe("testing the routes to add students who have no number", () => {
   it("adds a student with no number to the temp_students table", async () => {
-    const studentName = "tim";
+    const studentName = "#608: tim";
     const body = { studentToAdd: studentName };
     const response = await request(app)
       .post("/students/add/noNumber")
@@ -463,7 +463,7 @@ describe("testing the routes to add students who have no number", () => {
   });
 
   it("does not allow a student to be entered twice", async () => {
-    const studentName = "tim";
+    const studentName = "#812: tim";
     const body = { studentToAdd: studentName };
     const response = await request(app)
       .post("/students/add/noNumber")
@@ -612,11 +612,11 @@ describe("testing the model to remove students who have no number", () => {
   it("sets isloaded to false for a student with no number from the temporary students table", async () => {
     const result = await db.query(
       `INSERT INTO temp_students
-       (name, time, isloaded)
+       (name, number, time, isloaded)
        VALUES
-       ($1, $2, $3)
-       RETURNING name, time, isloaded`,
-      ["joe", "167856788654", true]
+       ($1, $2, $3, $4)
+       RETURNING name, number, time, isloaded`,
+      ["joe", "555", "167856788654", true]
     );
 
     await Student.removeStudentWithNoNumber("joe");
