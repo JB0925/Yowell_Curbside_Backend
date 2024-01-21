@@ -25,7 +25,7 @@ if (process.env.NODE_ENV === "production") {
   });
 }
 
-if (process.env.USE_CI === "true") {
+if (process.env.USE_CI === "true" && process.env.NODE_ENV === "test") {
   db = new Pool({
     connectionString: getDatabaseUri(),
     max: 20,
