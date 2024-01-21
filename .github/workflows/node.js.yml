@@ -43,7 +43,6 @@ jobs:
         run: npm run setup_test_db
         env: 
           PGPASSWORD: postgres
-          USE_CI: "true"
 
       - name: Run the test
         run: npm run test
@@ -52,4 +51,5 @@ jobs:
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: curbside_test2
           POSTGRES_HOST: localhost
+          USE_CI: "true"
 

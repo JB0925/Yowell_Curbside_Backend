@@ -32,7 +32,7 @@ if (process.env.USE_CI === "true" && process.env.NODE_ENV === "test") {
     max: 20,
     connectionTimeoutMillis: 0,
     idleTimeoutMillis: 0,
-    password: process.env.PGPASSWORD,
+    password: process.env.POSTGRES_PASSWORD,
     database: "curbside_test2",
     host: "localhost",
     port: 5432,
