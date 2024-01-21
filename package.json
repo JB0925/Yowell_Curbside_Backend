@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "setup_test_db": "psql --host=localhost --port=5432 -f ci_db_setup.sql",
+    "setup_test_db": "psql --host=localhost --port=5432 --username=postgres --dbname=curbside_test -f ci_db_setup.sql",
     "test": "jest -i --forceExit --coverage"
   },
   "keywords": [],
