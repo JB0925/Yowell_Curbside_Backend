@@ -25,6 +25,7 @@ beforeAll(async () => {
   await db.query(
     `CREATE TABLE IF NOT EXISTS temp_students (
      name VARCHAR(50) NOT NULL,
+     number VARCHAR NOT NULL,
      isloaded BOOLEAN DEFAULT false,
      time VARCHAR,
      added BOOLEAN DEFAULT false    
