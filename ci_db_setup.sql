@@ -1,10 +1,10 @@
-DROP DATABASE IF EXISTS curbside_test;
+DROP DATABASE IF EXISTS curbside_test2;
 DROP TABLE IF EXISTS students;
 DROP TABLE IF EXISTS temp_students;
 
-CREATE DATABASE curbside_test;
+CREATE DATABASE curbside_test2;
 
-\c curbside_test
+\c curbside_test2
 
 CREATE TABLE IF NOT EXISTS students (
   number VARCHAR PRIMARY KEY NOT NULL UNIQUE,

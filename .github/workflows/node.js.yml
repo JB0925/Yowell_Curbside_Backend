@@ -16,7 +16,7 @@ jobs:
         env:
           POSTGRES_PASSWORD: postgres
           POSTGRES_USER: postgres
-          POSTGRES_DB: curbside_test
+          POSTGRES_DB: curbside_test2
 
         options: >-
           --health-cmd pg_isready
@@ -49,6 +49,6 @@ jobs:
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: curbside_test
+          POSTGRES_DB: curbside_test2
           POSTGRES_HOST: localhost
 
