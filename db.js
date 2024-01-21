@@ -19,7 +19,6 @@ if (process.env.NODE_ENV === "production") {
 } else {
   db = new Pool({
     connectionString: getDatabaseUri(),
-    password: "postgres",
     max: 20,
     connectionTimeoutMillis: 0,
     idleTimeoutMillis: 0,
@@ -27,13 +26,17 @@ if (process.env.NODE_ENV === "production") {
 }
 
 if (process.env.USE_CI === "true" && process.env.NODE_ENV === "test") {
+  console.log("USING CI DATABASE")
   db = new Pool({
-    connectionString: getDatabaseUri(),
+    // connectionString: getDatabaseUri(),
     max: 20,
     connectionTimeoutMillis: 0,
     idleTimeoutMillis: 0,
     password: "postgres",
-    database: "curbside_test"
+    database: "curbside_test",
+    host: "localhost",
+    port: 5432,
+    user: "postgres",
   });
 }
 
