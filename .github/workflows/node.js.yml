@@ -41,6 +41,8 @@ jobs:
 
       - name: setup testing database
         run: npm run setup_test_db
+        env: 
+          PGPASSWORD: postgres
 
       - name: Run the test
         run: npm run test
