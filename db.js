@@ -33,7 +33,7 @@ if (process.env.USE_CI === "true" && process.env.NODE_ENV === "test") {
     connectionTimeoutMillis: 0,
     idleTimeoutMillis: 0,
     password: "postgres",
-    database: "curbside_test",
+    database: "curbside_test2",
     host: "localhost",
     port: 5432,
     user: "postgres",
