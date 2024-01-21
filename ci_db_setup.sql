@@ -1,4 +1,6 @@
 DROP DATABASE IF EXISTS curbside_test;
+DROP TABLE IF EXISTS students;
+DROP TABLE IF EXISTS temp_students;
 
 CREATE DATABASE curbside_test;
 
