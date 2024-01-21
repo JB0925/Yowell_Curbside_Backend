@@ -1,5 +1,5 @@
 process.env.NODE_ENV = "test";
-process.env.USE_CI = "true";
+// process.env.USE_CI = "true";
 const app = require("./index");
 const db = require("./db");
 const request = require("supertest");

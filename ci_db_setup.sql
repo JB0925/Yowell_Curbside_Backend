@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS students (
   isloaded BOOLEAN DEFAULT false,
   time VARCHAR,
   added BOOLEAN DEFAULT false    
-)
+);
 
 CREATE TABLE IF NOT EXISTS temp_students (
   name VARCHAR(50) NOT NULL,
@@ -20,6 +20,6 @@ CREATE TABLE IF NOT EXISTS temp_students (
   isloaded BOOLEAN DEFAULT false,
   time VARCHAR,
   added BOOLEAN DEFAULT false    
-)
+);
 
 ALTER TABLE temp_students ADD COLUMN number VARCHAR NOT NULL;
