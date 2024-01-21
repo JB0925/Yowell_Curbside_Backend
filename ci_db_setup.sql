@@ -21,5 +21,3 @@ CREATE TABLE IF NOT EXISTS temp_students (
   time VARCHAR,
   added BOOLEAN DEFAULT false    
 );
-
-ALTER TABLE temp_students ADD COLUMN number VARCHAR NOT NULL;
