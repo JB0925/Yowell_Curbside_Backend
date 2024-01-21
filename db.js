@@ -25,6 +25,17 @@ if (process.env.NODE_ENV === "production") {
   });
 }
 
+if (process.env.USE_CI === "true") {
+  db = new Pool({
+    connectionString: getDatabaseUri(),
+    max: 20,
+    connectionTimeoutMillis: 0,
+    idleTimeoutMillis: 0,
+    password: "postgres",
+    database: "curbside_test"
+  });
+}
+
 db.connect();
 
 module.exports = db;
