@@ -43,6 +43,7 @@ jobs:
         run: npm run setup_test_db
         env: 
           PGPASSWORD: postgres
+          USE_CI: "true"
 
       - name: Run the test
         run: npm run test
